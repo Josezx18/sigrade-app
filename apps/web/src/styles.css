@@ -1,0 +1,222 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-muted: #f8fafc;
+  --color-muted-foreground: #64748b;
+  --color-accent: #f1f5f9;
+  --color-accent-foreground: #0f172a;
+  --color-border: #e2e8f0;
+  --color-input: #e2e8f0;
+  --color-ring: #0f2d5e;
+  --color-sidebar: #f8fafc;
+  --color-sidebar-foreground: #0f172a;
+  --color-sidebar-primary: #0f2d5e;
+  --color-sidebar-primary-foreground: #ffffff;
+  --color-sidebar-accent: #f1f5f9;
+  --color-sidebar-accent-foreground: #0f172a;
+  --color-sidebar-border: #e2e8f0;
+  --color-sidebar-ring: #0f2d5e;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border, #e2e8f0);
+  }
+
+  body {
+    background-color: var(--color-muted, #f8fafc);
+    color: #0f172a;
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  *:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--color-ring, #0f2d5e);
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, #0f2d5e 20%, transparent);
+    color: #071a36;
+  }
+
+  ::-webkit-scrollbar {
+    width: 0.5rem;
+    height: 0.5rem;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-secondary-300, #cbd5e1);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-secondary-400, #94a3b8);
+  }
+}
+
+@layer components {
+  .container-app {
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .container-fluid {
+    @apply w-full px-4 sm:px-6 lg:px-8;
+  }
+
+  .sidebar {
+    @apply fixed left-0 top-0 z-40 h-screen border-r transition-all duration-300;
+  }
+
+  .sidebar-collapsed {
+    @apply w-12;
+  }
+
+  .header {
+    @apply sticky top-0 z-30 flex h-14 items-center gap-2 border-b px-4;
+  }
+
+  .avatar {
+    @apply inline-flex items-center justify-center rounded-full font-medium;
+  }
+
+  .avatar-sm {
+    @apply h-8 w-8 text-xs;
+  }
+
+  .avatar-md {
+    @apply h-10 w-10 text-sm;
+  }
+
+  .avatar-lg {
+    @apply h-12 w-12 text-base;
+  }
+
+  .avatar-xl {
+    @apply h-16 w-16 text-lg;
+  }
+
+  .table-container {
+    @apply relative w-full overflow-auto;
+  }
+
+  .table {
+    @apply w-full caption-bottom text-sm;
+  }
+
+  .table-header {
+    @apply [&_tr]:border-b;
+  }
+
+  .table-body {
+    @apply [&_tr:last-child]:border-0;
+  }
+
+  .table-footer {
+    @apply border-t font-medium [&>tr]:last:border-b-0;
+  }
+
+  .table-row {
+    @apply border-b transition-colors hover:bg-secondary-50;
+  }
+
+  .table-head {
+    @apply h-10 px-2 text-left align-middle font-medium;
+  }
+
+  .table-cell {
+    @apply p-2 align-middle;
+  }
+
+  .table-caption {
+    @apply mt-4 text-sm;
+  }
+
+  .container-app {
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .container-fluid {
+    @apply w-full px-4 sm:px-6 lg:px-8;
+  }
+
+  .divider {
+    @apply border-t;
+  }
+
+  .divider-vertical {
+    @apply border-l h-full;
+  }
+
+  .visually-hidden {
+    @apply absolute h-px w-px -translate-x-1/2 -translate-y-1/2 overflow-hidden whitespace-nowrap rounded-[1px] border-0 p-0;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .skip-link {
+    @apply absolute -top-10 left-0 z-50 rounded-br-lg px-4 py-2 transition-all;
+  }
+
+  .skip-link:focus {
+    @apply top-0;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-in {
+    animation: animate-in 0.2s ease-out;
+  }
+
+  .animate-out {
+    animation: animate-out 0.15s ease-in;
+  }
+
+  @keyframes animate-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes animate-out {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-4px); }
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-secondary-300, #cbd5e1) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: var(--color-secondary-300, #cbd5e1);
+    border-radius: 3px;
+  }
+}

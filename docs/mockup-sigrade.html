@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGRADE — Plataforma de Gestión Educativa</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background: #f0f2f5; color: #1a1a2e; font-size: 10pt; overflow: hidden; height: 100vh;
+  }
+  /* ===== LOGIN ===== */
+  #login-screen {
+    position: fixed; inset: 0; z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #0a2463 0%, #1e88e5 60%, #0d47a1 100%);
+    transition: opacity .6s, transform .6s;
+  }
+  #login-screen.hidden { opacity: 0; transform: scale(1.05); pointer-events: none; }
+  .login-box {
+    background: #fff; border-radius: 16px; padding: 40px; width: 380px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.3); text-align: center;
+  }
+  .login-box .logo { font-size: 40px; margin-bottom: 6px; }
+  .login-box h1 { font-size: 18pt; color: #0a2463; }
+  .login-box .sub { font-size: 9pt; color: #888; margin-bottom: 24px; }
+  .login-box input {
+    width: 100%; padding: 12px 14px; margin: 6px 0; border: 1px solid #ddd;
+    border-radius: 8px; font-size: 10pt; outline: none;
+  }
+  .login-box input:focus { border-color: #1e88e5; box-shadow: 0 0 0 3px rgba(30,136,229,.15); }
+  .login-box button {
+    width: 100%; padding: 12px; margin-top: 14px; border: none; border-radius: 8px;
+    background: #0a2463; color: #fff; font-size: 11pt; font-weight: 600; cursor: pointer;
+  }
+  .login-box button:hover { background: #1a3a7a; }
+  .login-box .hint { font-size: 8pt; color: #aaa; margin-top: 12px; }
+  /* ===== LAYOUT ===== */
+  #app { display: none; height: 100vh; }
+  #app.active { display: flex; }
+  .sidebar {
+    width: 220px; background: #0a2463; color: #fff; display: flex; flex-direction: column;
+    flex-shrink: 0; transition: width .3s;
+  }
+  .sidebar .brand {
+    padding: 18px 16px; font-size: 13pt; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,.1);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sidebar .menu { flex: 1; overflow-y: auto; padding: 8px 0; }
+  .sidebar .menu-title { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,.4); padding: 12px 16px 4px; }
+  .sidebar .menu-item {
+    padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px;
+    font-size: 9.5pt; color: rgba(255,255,255,.7); transition: all .2s; border-left: 3px solid transparent;
+  }
+  .sidebar .menu-item:hover { background: rgba(255,255,255,.08); color: #fff; }
+  .sidebar .menu-item.active { background: rgba(255,255,255,.12); color: #fff; border-left-color: #42a5f5; }
+  .sidebar .menu-item .icon { font-size: 12pt; width: 24px; text-align: center; }
+  .sidebar .user-card {
+    padding: 14px 16px; border-top: 1px solid rgba(255,255,255,.1); display: flex; align-items: center; gap: 10px;
+  }
+  .sidebar .user-card .avatar {
+    width: 34px; height: 34px; border-radius: 50%; background: #42a5f5;
+    display: flex; align-items: center; justify-content: center; font-size: 11pt; color: #fff; font-weight: 700;
+  }
+  .sidebar .user-card .name { font-size: 9pt; font-weight: 600; }
+  .sidebar .user-card .role-label { font-size: 7.5pt; color: rgba(255,255,255,.5); text-transform: uppercase; }
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar {
+    height: 54px; background: #fff; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center;
+    padding: 0 24px; gap: 12px; flex-shrink: 0;
+  }
+  .topbar .breadcrumb { font-size: 9pt; color: #888; }
+  .topbar .breadcrumb strong { color: #333; }
+  .topbar .spacer { flex: 1; }
+  .topbar .notif { font-size: 16pt; cursor: pointer; opacity: .5; }
+  .topbar .notif:hover { opacity: 1; }
+  /* ===== ROLE TABS ===== */
+  .role-tabs {
+    display: flex; background: #fff; border-bottom: 1px solid #e0e0e0;
+    padding: 0 24px; gap: 0; flex-shrink: 0;
+  }
+  .role-tab {
+    padding: 10px 18px; cursor: pointer; font-size: 9pt; font-weight: 600;
+    color: #888; border-bottom: 3px solid transparent; transition: all .2s;
+  }
+  .role-tab:hover { color: #333; }
+  .role-tab.active { color: #0a2463; border-bottom-color: #0a2463; }
+  .role-tab .dot {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px;
+  }
+  /* ===== CONTENT ===== */
+  .content {
+    flex: 1; overflow-y: auto; padding: 20px 24px; background: #f5f7fa;
+  }
+  .page { display: none; animation: fadeIn .4s; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  /* ===== WIDGETS ===== */
+  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 18px; }
+  .kpi-card {
+    background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    border-left: 4px solid #1e88e5;
+  }
+  .kpi-card .num { font-size: 22pt; font-weight: 800; color: #0a2463; line-height: 1.1; }
+  .kpi-card .num.green { color: #2e7d32; }
+  .kpi-card .num.red { color: #c62828; }
+  .kpi-card .num.orange { color: #e65100; }
+  .kpi-card .label { font-size: 8.5pt; color: #888; }
+  .kpi-card .sub-label { font-size: 8pt; color: #aaa; }
+  .card {
+    background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    margin-bottom: 14px;
+  }
+  .card h3 { font-size: 10.5pt; color: #0a2463; margin-bottom: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+  th { background: #f5f7fa; color: #555; font-weight: 600; padding: 8px 10px; text-align: left; font-size: 8pt; text-transform: uppercase; }
+  td { padding: 7px 10px; border-bottom: 1px solid #f0f0f0; }
+  tr:hover td { background: #f8faff; }
+  .badge {
+    display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 8pt; font-weight: 600;
+  }
+  .badge.green { background: #e8f5e9; color: #2e7d32; }
+  .badge.blue { background: #e3f2fd; color: #1565c0; }
+  .badge.orange { background: #fff3e0; color: #e65100; }
+  .badge.red { background: #ffebee; color: #c62828; }
+  .alert-row {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+    border-radius: 6px; margin-bottom: 4px; font-size: 9pt;
+  }
+  .alert-row.red { background: #ffebee; border-left: 3px solid #c62828; }
+  .alert-row.orange { background: #fff3e0; border-left: 3px solid #e65100; }
+  .alert-row.green { background: #e8f5e9; border-left: 3px solid #2e7d32; }
+  .chart-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; font-size: 9pt; }
+  .chart-bar .bar {
+    height: 18px; border-radius: 4px; display: flex; align-items: center; padding-left: 8px;
+    font-size: 8pt; color: #fff; font-weight: 600; min-width: 30px;
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .att-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin: 1px; }
+  .att-dot.present { background: #43a047; }
+  .att-dot.absent { background: #e53935; }
+  .att-dot.justified { background: #ffa726; }
+  .unit-card {
+    border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; margin-bottom: 8px;
+  }
+  .unit-card .progress { height: 4px; background: #e0e0e0; border-radius: 2px; margin-top: 6px; }
+  .unit-card .progress .fill { height: 100%; border-radius: 2px; background: #1e88e5; }
+  .session-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 9pt; }
+  .session-row .check { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 8pt; color: #fff; }
+  .check.done { background: #2e7d32; }
+  .check.pending { background: #bbb; }
+  .tooltip { position: relative; }
+  .tooltip:hover:after {
+    content: attr(data-tip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+    background: #333; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 8pt; white-space: nowrap; z-index: 10;
+  }
+  .ai-badge {
+    display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff;
+    border-radius: 12px; font-size: 7.5pt; font-weight: 600;
+  }
+  .page-selector { display: flex; gap: 4px; margin: 0 24px; }
+  .page-dot { width: 8px; height: 8px; border-radius: 50%; background: #ddd; cursor: pointer; }
+  .page-dot.active { background: #0a2463; }
+  @media (max-width:800px) {
+    .sidebar { width: 56px; }
+    .sidebar .brand span, .sidebar .menu-item span, .sidebar .menu-title, .sidebar .user-card .name, .sidebar .user-card .role-label { display: none; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN ===== -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="logo">&#x1F4DA;</div>
+    <h1>SIGRADE</h1>
+    <div class="sub">Sistema de Gesti&oacute;n Educativa</div>
+    <input type="text" value="director@escuela.edu.do" readonly style="background:#f5f5f5;">
+    <input type="password" value="••••••••" readonly style="background:#f5f5f5;">
+    <button onclick="enterApp()">Iniciar Sesi&oacute;n</button>
+    <div class="hint">Haga clic para acceder a la plataforma</div>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="brand">&#x1F4DA; <span>SIGRADE</span></div>
+    <div class="menu" id="menu"></div>
+    <div class="user-card">
+      <div class="avatar" id="user-avatar">M</div>
+      <div>
+        <div class="name" id="user-name">Mar&iacute;a Santos</div>
+        <div class="role-label" id="user-role">DOCENTE</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <span class="breadcrumb" id="breadcrumb"><strong>Dashboard</strong></span>
+      <span class="spacer"></span>
+      <div class="page-selector" id="page-dots"></div>
+      <span class="notif">&#x1F514;</span>
+    </div>
+
+    <!-- ROLE TABS -->
+    <div class="role-tabs" id="role-tabs">
+      <div class="role-tab active" onclick="switchRole('docente')"><span class="dot" style="background:#42a5f5;"></span>Docente</div>
+      <div class="role-tab" onclick="switchRole('director')"><span class="dot" style="background:#2e7d32;"></span>Director</div>
+      <div class="role-tab" onclick="switchRole('distrito')"><span class="dot" style="background:#e65100;"></span>Distrito</div>
+      <div class="role-tab" onclick="switchRole('regional')"><span class="dot" style="background:#7b1fa2;"></span>Regional</div>
+      <div class="role-tab" onclick="switchRole('nacional')"><span class="dot" style="background:#c62828;"></span>Nacional</div>
+    </div>
+
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const roles = {
+  docente: {
+    avatar: 'M', name: 'María Santos', role: 'DOCENTE - Lic. Biología',
+    pages: ['dashboard', 'grupos', 'asistencia', 'calificaciones', 'planificacion'],
+    menu: { 'Dashboard': '📊', 'Mis Grupos': '👥', 'Tomar Asistencia': '📋', 'Calificaciones': '📝', 'Planificación': '📖', 'Mi Horario': '🕐' }
+  },
+  director: {
+    avatar: 'R', name: 'Roberto Peña', role: 'DIRECTOR - Esc. Prof. Juan Bosch',
+    pages: ['dashboard', 'estudiantes', 'calificaciones', 'asistencia', 'planificaciones', 'reportes'],
+    menu: { 'Dashboard': '📊', 'Estudiantes': '👥', 'Calificaciones': '📝', 'Asistencia': '📋', 'Planificaciones': '📖', 'Reportes': '📄', 'Alertas': '🔔' }
+  },
+  distrito: {
+    avatar: 'A', name: 'Ana Martínez', role: 'DISTRITO - Técnico 10-01',
+    pages: ['dashboard', 'centros', 'comparativa', 'supervision'],
+    menu: { 'Dashboard': '📊', 'Centros': '🏫', 'Comparativa': '📈', 'Supervisión': '🔍', 'Reportes': '📄', 'Alertas': '🔔' }
+  },
+  regional: {
+    avatar: 'C', name: 'Carlos Gómez', role: 'REGIONAL - Director Reg. 10',
+    pages: ['dashboard', 'distritos', 'cobertura', 'analitica'],
+    menu: { 'Dashboard': '📊', 'Distritos': '🗺️', 'Cobertura': '📖', 'Analítica': '📈', 'Reportes': '📄' }
+  },
+  nacional: {
+    avatar: 'L', name: 'Laura Ramírez', role: 'MINERD - Viceministra',
+    pages: ['dashboard', 'regionales', 'mapa', 'predictivo'],
+    menu: { 'Dashboard': '📊', 'Regionales': '🗺️', 'Mapa Educativo': '🌐', 'Analítica Predictiva': '🤖', 'Alertas Nacionales': '🔔', 'Políticas': '📋' }
+  }
+};
+
+// ===== PAGE DATA =====
+const pageContent = {};
+
+// ---- DOCENTE ----
+pageContent['docente-dashboard'] = `
+  <div class="kpi-row">
+    <div class="kpi-card" style="border-left-color:#42a5f5;"><div class="num">3</div><div class="label">Grupos asignados</div><div class="sub-label">1ro A, 1ro B, 2do A</div></div>
+    <div class="kpi-card" style="border-left-color:#2e7d32;"><div class="num green">95</div><div class="label">Estudiantes</div><div class="sub-label">Total a cargo</div></div>
+    <div class="kpi-card" style="border-left-color:#e65100;"><div class="num orange">88%</div><div class="label">Asistencia grupal</div><div class="sub-label">Promedio del mes</div></div>
+    <div class="kpi-card" style="border-left-color:#1565c0;"><div class="num">6</div><div class="label">Planificaciones</div><div class="sub-label">Al día ✓</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><h3>📅 Próximas clases</h3>
+      <div style="font-size:9pt;">🔬 <strong>1ro A</strong> — Ciencias Naturales — Lun 8:00 AM</div>
+      <div style="font-size:9pt;">🔬 <strong>1ro B</strong> — Ciencias Naturales — Lun 9:30 AM</div>
+      <div style="font-size:9pt;">🔬 <strong>2do A</strong> — Biología — Mar 8:00 AM</div>
+      <div style="font-size:9pt;color:#888;margin-top:6px;">📌 Pendiente: tomar asistencia 1ro A hoy</div>
+    </div>
+    <div class="card"><h3>🔔 Alertas recientes</h3>
+      <div class="alert-row orange">⚠️ Estudiante Juan Pérez (1ro A): 5 faltas consecutivas</div>
+      <div class="alert-row orange">⚠️ 3 estudiantes con promedio bajo en Ciencias</div>
+      <div class="alert-row green">✅ Planificación unidad 3 completada</div>
+    </div>
+  </div>
+`;
+
+pageContent['docente-grupos'] = `
+  <div class="card"><h3>Mis Grupos</h3>
+  <table><tr><th>Grupo</th><th>Asignatura</th><th>Estudiantes</th><th>Asistencia</th><th>Promedio</th><th>Acción</th></tr>
+  <tr><td>1ro A</td><td>Ciencias Naturales</td><td>32</td><td>87%</td><td><span class="badge blue">76</span></td><td><span class="badge green" style="cursor:pointer;">Ver grupo</span></td></tr>
+  <tr><td>1ro B</td><td>Ciencias Naturales</td><td>30</td><td>91%</td><td><span class="badge green">82</span></td><td><span class="badge green" style="cursor:pointer;">Ver grupo</span></td></tr>
+  <tr><td>2do A</td><td>Biología</td><td>33</td><td>85%</td><td><span class="badge blue">74</span></td><td><span class="badge green" style="cursor:pointer;">Ver grupo</span></td></tr>
+  </table></div>
+`;
+
+pageContent['docente-asistencia'] = `
+  <div class="card"><h3>📋 Tomar Asistencia — 1ro A — Lunes 28 Julio 2026</h3>
+  <p style="font-size:9pt;color:#888;margin-bottom:8px;">Toque la marca para cambiar: <span class="att-dot present"></span> Presente <span class="att-dot absent"></span> Ausente <span class="att-dot justified"></span> Justificado</p>
+  <table><tr><th>#</th><th>Estudiante</th><th>Estado</th></tr>
+  <tr><td>1</td><td>Almonte, Carlos</td><td><span class="att-dot present"></span> Presente</td></tr>
+  <tr><td>2</td><td>Castillo, María</td><td><span class="att-dot present"></span> Presente</td></tr>
+  <tr><td>3</td><td>De León, Ana</td><td><span class="att-dot absent"></span> Ausente</td></tr>
+  <tr><td>4</td><td>Féliz, Juan</td><td><span class="att-dot present"></span> Presente</td></tr>
+  <tr><td>5</td><td>García, Pedro</td><td><span class="att-dot justified"></span> Justificado</td></tr>
+  <tr><td>6</td><td>Guzmán, Rosa</td><td><span class="att-dot present"></span> Presente</td></tr>
+  <tr><td>7</td><td>Hernández, Luis</td><td><span class="att-dot absent"></span> Ausente</td></tr>
+  <tr><td>8</td><td>Jiménez, Carla</td><td><span class="att-dot present"></span> Presente</td></tr>
+  </table>
+  <div style="margin-top:8px;font-size:9pt;color:#c62828;">⚠️ 2 ausentes. Se enviará notificación automática a los padres.</div>
+  </div>
+`;
+
+pageContent['docente-calificaciones'] = `
+  <div class="card"><h3>📝 Calificaciones — 1ro A — Ciencias Naturales</h3>
+  <table><tr><th>Estudiante</th><th>P1</th><th>P2</th><th>P3</th><th>Promedio</th><th>Estatus</th></tr>
+  <tr><td>Almonte, Carlos</td><td>85</td><td>78</td><td>82</td><td><span class="badge green">82</span></td><td>✅ Aprobado</td></tr>
+  <tr><td>Castillo, María</td><td>92</td><td>88</td><td>95</td><td><span class="badge green">92</span></td><td>✅ Aprobado</td></tr>
+  <tr><td>De León, Ana</td><td>60</td><td>55</td><td>58</td><td><span class="badge red">58</span></td><td>⚠️ En riesgo</td></tr>
+  <tr><td>Féliz, Juan</td><td>70</td><td>75</td><td>72</td><td><span class="badge blue">72</span></td><td>✅ Aprobado</td></tr>
+  <tr><td>García, Pedro</td><td>88</td><td>90</td><td>86</td><td><span class="badge green">88</span></td><td>✅ Aprobado</td></tr>
+  <tr><td>Guzmán, Rosa</td><td>65</td><td>68</td><td>62</td><td><span class="badge orange">65</span></td><td>⚠️ Recuperación</td></tr>
+  <tr><td>Hernández, Luis</td><td>45</td><td>50</td><td>48</td><td><span class="badge red">48</span></td><td>🔴 Riesgo alto</td></tr>
+  <tr><td>Jiménez, Carla</td><td>78</td><td>82</td><td>80</td><td><span class="badge green">80</span></td><td>✅ Aprobado</td></tr>
+  </table></div>
+`;
+
+pageContent['docente-planificacion'] = `
+  <div class="card"><h3>📖 Planificación — Ciencias Naturales — 1ro A</h3>
+  <div class="unit-card">
+    <div style="display:flex;justify-content:space-between;font-size:9pt;">
+      <strong>Unidad 1: Los Seres Vivos</strong> <span class="badge green">8/8 sesiones</span>
+    </div>
+    <div class="progress"><div class="fill" style="width:100%"></div></div>
+    <div style="margin-top:6px;">
+      <div class="session-row"><span class="check done">✓</span> Sesión 1: Características de los seres vivos</div>
+      <div class="session-row"><span class="check done">✓</span> Sesión 2: La célula</div>
+      <div class="session-row"><span class="check done">✓</span> Sesión 3: Organismos unicelulares</div>
+      <div class="session-row"><span class="check done">✓</span> Sesión 4: Tejidos y órganos</div>
+      <div class="session-row"><span class="check done">✓</span> Sesión 5: Evaluación parcial</div>
+    </div>
+  </div>
+  <div class="unit-card">
+    <div style="display:flex;justify-content:space-between;font-size:9pt;">
+      <strong>Unidad 2: Ecosistemas</strong> <span class="badge orange">4/6 sesiones</span>
+    </div>
+    <div class="progress"><div class="fill" style="width:67%;background:#e65100;"></div></div>
+    <div style="margin-top:6px;">
+      <div class="session-row"><span class="check done">✓</span> Sesión 1: Componentes del ecosistema</div>
+      <div class="session-row"><span class="check done">✓</span> Sesión 2: Cadenas alimentarias</div>
+      <div class="session-row"><span class="check pending">◻</span> Sesión 3: Biomas terrestres</div>
+    </div>
+  </div>
+  <div style="margin-top:8px;text-align:right;"><span class="ai-badge">🤖 IA Assist</span> <span style="font-size:8pt;color:#888;">Sugerir actividades para próxima sesión</span></div>
+  `;
+
+// ---- DIRECTOR ----
+pageContent['director-dashboard'] = `
+  <div class="kpi-row">
+    <div class="kpi-card" style="border-left-color:#2e7d32;"><div class="num green">450</div><div class="label">Estudiantes</div><div class="sub-label">Matrícula del centro</div></div>
+    <div class="kpi-card" style="border-left-color:#42a5f5;"><div class="num">12</div><div class="label">Docentes</div><div class="sub-label">6 titulares, 6 asignaturas</div></div>
+    <div class="kpi-card" style="border-left-color:#e65100;"><div class="num orange">85%</div><div class="label">Asistencia general</div><div class="sub-label">Este mes</div></div>
+    <div class="kpi-card" style="border-left-color:#c62828;"><div class="num red">3</div><div class="label">Alertas activas</div><div class="sub-label">2 ausentismo, 1 rendimiento</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><h3>📊 Rendimiento por grado</h3>
+      <div class="chart-bar"><span style="width:80px;">1ro</span><div class="bar" style="width:78%;background:#2e7d32;">78%</div></div>
+      <div class="chart-bar"><span style="width:80px;">2do</span><div class="bar" style="width:72%;background:#42a5f5;">72%</div></div>
+      <div class="chart-bar"><span style="width:80px;">3ro</span><div class="bar" style="width:65%;background:#e65100;">65%</div></div>
+      <div class="chart-bar"><span style="width:80px;">4to</span><div class="bar" style="width:58%;background:#c62828;">58%</div></div>
+    </div>
+    <div class="card"><h3>🔔 Alertas del centro</h3>
+      <div class="alert-row red">🔴 <strong>4to grado</strong> — Promedio general 58% en Matemáticas</div>
+      <div class="alert-row orange">⚠️ <strong>Juan Pérez (1ro A)</strong> — 12 faltas en el mes</div>
+      <div class="alert-row orange">⚠️ <strong>María Soto (3ro B)</strong> — 8 faltas consecutivas</div>
+      <div class="alert-row green">✅ Planificaciones al día: 11 de 12 docentes</div>
+    </div>
+  </div>
+`;
+
+pageContent['director-estudiantes'] = `
+  <div class="card"><h3>👥 Estudiantes del Centro</h3>
+  <p style="font-size:8pt;color:#888;margin-bottom:8px;">Buscar: <input type="text" placeholder="Nombre o código..." style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;width:200px;"></p>
+  <table><tr><th>RNE</th><th>Nombre</th><th>Grado</th><th>Asistencia</th><th>Promedio</th></tr>
+  <tr><td>2024-12345</td><td>Almonte, Carlos</td><td>1ro A</td><td>92%</td><td><span class="badge green">82</span></td></tr>
+  <tr><td>2024-12346</td><td>Castillo, María</td><td>1ro A</td><td>95%</td><td><span class="badge green">92</span></td></tr>
+  <tr><td>2024-12347</td><td>De León, Ana</td><td>1ro A</td><td>78%</td><td><span class="badge red">58</span></td></tr>
+  <tr><td>2024-12348</td><td>Féliz, Juan</td><td>2do B</td><td>65%</td><td><span class="badge orange">65</span></td></tr>
+  <tr><td>2024-12349</td><td>García, Pedro</td><td>2do A</td><td>90%</td><td><span class="badge green">88</span></td></tr>
+  <tr><td>2024-12350</td><td>Hernández, Luis</td><td>1ro B</td><td>55%</td><td><span class="badge red">48</span></td></tr>
+  <tr><td>2024-12351</td><td>Jiménez, Carla</td><td>3ro A</td><td>88%</td><td><span class="badge blue">74</span></td></tr>
+  <tr><td>2024-12352</td><td>Pérez, Juan</td><td>1ro A</td><td>45%</td><td><span class="badge red">52</span></td></tr>
+  </table>
+  <div style="margin-top:8px;font-size:8pt;color:#888;">Mostrando 8 de 450 estudiantes</div>
+  </div>
+`;
+
+pageContent['director-calificaciones'] = `
+  <div class="card"><h3>📝 Calificaciones por grado</h3>
+  <table><tr><th>Grado</th><th>Matemáticas</th><th>Lengua Esp.</th><th>Ciencias Soc.</th><th>Ciencias Nat.</th><th>Promedio</th></tr>
+  <tr><td>1ro</td><td><span class="badge green">81</span></td><td><span class="badge green">83</span></td><td><span class="badge blue">76</span></td><td><span class="badge green">80</span></td><td>80%</td></tr>
+  <tr><td>2do</td><td><span class="badge blue">72</span></td><td><span class="badge blue">75</span></td><td><span class="badge orange">68</span></td><td><span class="badge blue">74</span></td><td>72%</td></tr>
+  <tr><td>3ro</td><td><span class="badge orange">65</span></td><td><span class="badge blue">70</span></td><td><span class="badge orange">62</span></td><td><span class="badge orange">68</span></td><td>66%</td></tr>
+  <tr><td>4to</td><td><span class="badge red">58</span></td><td><span class="badge orange">62</span></td><td><span class="badge orange">60</span></td><td><span class="badge red">55</span></td><td>59%</td></tr>
+  </table>
+  <div style="margin-top:8px;padding:8px 12px;background:#fff3e0;border-radius:6px;font-size:9pt;">
+    ⚠️ <strong>4to grado</strong> requiere intervención prioritaria en Matemáticas y Ciencias Naturales.
+    Se recomienda capacitación docente y refuerzo académico.
+  </div>
+  </div>
+`;
+
+pageContent['director-asistencia'] = `
+  <div class="card"><h3>📋 Asistencia del mes — Julio 2026</h3>
+  <table><tr><th>Grado</th><th>Semana 1</th><th>Semana 2</th><th>Semana 3</th><th>Semana 4</th><th>Promedio</th></tr>
+  <tr><td>1ro A</td><td>92%</td><td>88%</td><td>90%</td><td>85%</td><td>89%</td></tr>
+  <tr><td>1ro B</td><td>95%</td><td>91%</td><td>93%</td><td>90%</td><td>92%</td></tr>
+  <tr><td>2do A</td><td>85%</td><td>82%</td><td>80%</td><td>78%</td><td>81%</td></tr>
+  <tr><td>2do B</td><td>80%</td><td>75%</td><td>72%</td><td>70%</td><td>74%</td></tr>
+  <tr><td>3ro A</td><td>78%</td><td>75%</td><td>70%</td><td>65%</td><td>72%</td></tr>
+  <tr><td>4to A</td><td>70%</td><td>68%</td><td>62%</td><td>58%</td><td>65%</td></tr>
+  </table>
+  <div style="margin-top:8px;font-size:8pt;color:#c62828;">⬇ La asistencia disminuye en grados superiores. 4to grado con 65% — crítico.</div>
+  </div>
+`;
+
+pageContent['director-planificaciones'] = `
+  <div class="card"><h3>📖 Estado de planificaciones</h3>
+  <table><tr><th>Docente</th><th>Asignatura</th><th>Unidades completas</th><th>Estado</th></tr>
+  <tr><td>María Santos</td><td>Ciencias Naturales</td><td>2 de 4</td><td><span class="badge green">Al día</span></td></tr>
+  <tr><td>Juan López</td><td>Matemáticas</td><td>1 de 4</td><td><span class="badge orange">Atrasada</span></td></tr>
+  <tr><td>Ana Pérez</td><td>Lengua Española</td><td>3 de 4</td><td><span class="badge green">Al día</span></td></tr>
+  <tr><td>Pedro Sánchez</td><td>Ciencias Sociales</td><td>1 de 4</td><td><span class="badge red">Crítico</span></td></tr>
+  <tr><td>Rosa Martínez</td><td>Inglés</td><td>2 de 4</td><td><span class="badge green">Al día</span></td></tr>
+  </table></div>
+`;
+
+pageContent['director-reportes'] = `
+  <div class="card"><h3>📄 Reportes disponibles</h3>
+  <div style="padding:8px 12px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;font-size:9pt;">
+    <span>📊 Rendimiento académico por grado — Julio 2026</span><span class="badge blue">Exportar PDF</span>
+  </div>
+  <div style="padding:8px 12px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;font-size:9pt;">
+    <span>📋 Asistencia mensual consolidada — Julio 2026</span><span class="badge blue">Exportar PDF</span>
+  </div>
+  <div style="padding:8px 12px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;font-size:9pt;">
+    <span>👥 Matrícula y retención estudiantil</span><span class="badge blue">Exportar PDF</span>
+  </div>
+  <div style="padding:8px 12px;display:flex;justify-content:space-between;font-size:9pt;">
+    <span>📖 Estado de planificaciones docentes</span><span class="badge blue">Exportar PDF</span>
+  </div>
+  </div>
+`;
+
+// ---- DISTRITO ----
+pageContent['distrito-dashboard'] = `
+  <div class="kpi-row">
+    <div class="kpi-card" style="border-left-color:#2e7d32;"><div class="num green">8</div><div class="label">Centros educativos</div><div class="sub-label">Distrito 10-01</div></div>
+    <div class="kpi-card" style="border-left-color:#42a5f5;"><div class="num">3,200</div><div class="label">Estudiantes</div><div class="sub-label">Total distrito</div></div>
+    <div class="kpi-card" style="border-left-color:#e65100;"><div class="num orange">83%</div><div class="label">Asistencia promedio</div><div class="sub-label">Todos los centros</div></div>
+    <div class="kpi-card" style="border-left-color:#c62828;"><div class="num red">2</div><div class="label">Centros con alerta</div><div class="sub-label">Requieren intervención</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><h3>🏫 Ranking de centros</h3>
+      <div class="chart-bar"><span style="width:120px;">Esc. Prof. Juan Bosch</span><div class="bar" style="width:82%;background:#2e7d32;">82%</div></div>
+      <div class="chart-bar"><span style="width:120px;">Liceo Científico</span><div class="bar" style="width:78%;background:#42a5f5;">78%</div></div>
+      <div class="chart-bar"><span style="width:120px;">Esc. Básica El Café</span><div class="bar" style="width:65%;background:#e65100;">65%</div></div>
+      <div class="chart-bar"><span style="width:120px;">Esc. Rural Los Pinos</span><div class="bar" style="width:55%;background:#c62828;">55%</div></div>
+    </div>
+    <div class="card"><h3>🔔 Alertas del distrito</h3>
+      <div class="alert-row red">🔴 <strong>Esc. Rural Los Pinos</strong> — 55% rendimiento, 68% asistencia</div>
+      <div class="alert-row orange">⚠️ <strong>Esc. Básica El Café</strong> — Descenso de asistencia (78%→65%)</div>
+      <div class="alert-row green">✅ 6 de 8 centros con planificaciones al día</div>
+    </div>
+  </div>
+`;
+
+pageContent['distrito-centros'] = `
+  <div class="card"><h3>🏫 Centros del Distrito 10-01</h3>
+  <table><tr><th>Centro</th><th>Estudiantes</th><th>Docentes</th><th>Asistencia</th><th>Rendimiento</th><th>Estatus</th></tr>
+  <tr><td>Esc. Prof. Juan Bosch</td><td>450</td><td>12</td><td>89%</td><td><span class="badge green">82%</span></td><td><span class="badge green">Normal</span></td></tr>
+  <tr><td>Liceo Científico Dr. Miguel Canela</td><td>520</td><td>15</td><td>86%</td><td><span class="badge green">80%</span></td><td><span class="badge green">Normal</span></td></tr>
+  <tr><td>Esc. Básica El Café</td><td>310</td><td>8</td><td>72%</td><td><span class="badge orange">65%</span></td><td><span class="badge orange">Alerta</span></td></tr>
+  <tr><td>Esc. Rural Los Pinos</td><td>180</td><td>5</td><td>68%</td><td><span class="badge red">55%</span></td><td><span class="badge red">Crítico</span></td></tr>
+  </table></div>
+`;
+
+pageContent['distrito-comparativa'] = `
+  <div class="card"><h3>📈 Comparativa de rendimiento por centro</h3>
+  <table><tr><th>Centro</th><th>Mat.</th><th>Leng.</th><th>C.Soc.</th><th>C.Nat.</th><th>Prom.</th></tr>
+  <tr><td>Esc. Prof. Juan Bosch</td><td><span class="badge green">84</span></td><td><span class="badge green">86</span></td><td><span class="badge blue">78</span></td><td><span class="badge green">80</span></td><td>82%</td></tr>
+  <tr><td>Liceo Científico</td><td><span class="badge blue">76</span></td><td><span class="badge green">82</span></td><td><span class="badge blue">75</span></td><td><span class="badge blue">78</span></td><td>78%</td></tr>
+  <tr><td>Esc. Básica El Café</td><td><span class="badge orange">60</span></td><td><span class="badge orange">68</span></td><td><span class="badge orange">62</span></td><td><span class="badge orange">65</span></td><td>65%</td></tr>
+  <tr><td>Esc. Rural Los Pinos</td><td><span class="badge red">48</span></td><td><span class="badge orange">60</span></td><td><span class="badge red">52</span></td><td><span class="badge red">50</span></td><td>55%</td></tr>
+  </table>
+  <div style="margin-top:8px;padding:8px 12px;background:#fff3e0;border-radius:6px;font-size:9pt;">
+    ⚠️ <strong>Matemáticas</strong> es la asignatura con menor rendimiento en 3 de 4 centros.
+    Se recomienda capacitación docente en didáctica de la matemática.
+  </div>
+  </div>
+`;
+
+pageContent['distrito-supervision'] = `
+  <div class="card"><h3>🔍 Supervisión — Centros con planificación atrasada</h3>
+  <table><tr><th>Centro</th><th>Docente</th><th>Asignatura</th><th>Unidades pendientes</th><th>Última actualización</th></tr>
+  <tr><td>Esc. Básica El Café</td><td>Juan López</td><td>Matemáticas</td><td>3 de 4</td><td>Hace 15 días</td></tr>
+  <tr><td>Esc. Rural Los Pinos</td><td>Pedro Sánchez</td><td>Ciencias Sociales</td><td>3 de 4</td><td>Hace 22 días</td></tr>
+  <tr><td>Esc. Rural Los Pinos</td><td>Lucía Mejía</td><td>Matemáticas</td><td>2 de 4</td><td>Hace 10 días</td></tr>
+  </table>
+  <div style="margin-top:8px;font-size:9pt;">Acción: <span class="badge orange">Programar visita de supervisión</span></div>
+  </div>
+`;
+
+// ---- REGIONAL ----
+pageContent['regional-dashboard'] = `
+  <div class="kpi-row">
+    <div class="kpi-card" style="border-left-color:#2e7d32;"><div class="num green">6</div><div class="label">Distritos</div><div class="sub-label">Regional 10 - Santo Domingo</div></div>
+    <div class="kpi-card" style="border-left-color:#42a5f5;"><div class="num">18,500</div><div class="label">Estudiantes</div><div class="sub-label">Matrícula regional</div></div>
+    <div class="kpi-card" style="border-left-color:#e65100;"><div class="num orange">76%</div><div class="label">Rendimiento promedio</div><div class="sub-label">Todas las áreas</div></div>
+    <div class="kpi-card" style="border-left-color:#7b1fa2;"><div class="num">82%</div><div class="label">Asistencia regional</div><div class="sub-label">Último mes</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><h3>🗺️ Rendimiento por distrito</h3>
+      <div class="chart-bar"><span style="width:100px;">Distrito 10-01</span><div class="bar" style="width:78%;background:#2e7d32;">78%</div></div>
+      <div class="chart-bar"><span style="width:100px;">Distrito 10-02</span><div class="bar" style="width:74%;background:#42a5f5;">74%</div></div>
+      <div class="chart-bar"><span style="width:100px;">Distrito 10-03</span><div class="bar" style="width:62%;background:#e65100;">62%</div></div>
+      <div class="chart-bar"><span style="width:100px;">Distrito 10-04</span><div class="bar" style="width:70%;background:#42a5f5;">70%</div></div>
+    </div>
+    <div class="card"><h3>📖 Brechas curriculares detectadas</h3>
+      <div class="alert-row orange">⚠️ <strong>Distrito 10-03</strong> — Baja cobertura en Matemáticas (solo 45% del currículo)</div>
+      <div class="alert-row orange">⚠️ <strong>Distrito 10-04</strong> — Ciencias Naturales con 52% de cobertura</div>
+      <div class="alert-row green">✅ Distrito 10-01: 85% de cobertura curricular general</div>
+    </div>
+  </div>
+`;
+
+pageContent['regional-distritos'] = `
+  <div class="card"><h3>🗺️ Distritos de la Regional 10</h3>
+  <table><tr><th>Distrito</th><th>Centros</th><th>Estudiantes</th><th>Rendimiento</th><th>Asistencia</th><th>Alertas</th></tr>
+  <tr><td>10-01</td><td>8</td><td>3,200</td><td><span class="badge green">78%</span></td><td>89%</td><td>2</td></tr>
+  <tr><td>10-02</td><td>6</td><td>2,800</td><td><span class="badge blue">74%</span></td><td>85%</td><td>1</td></tr>
+  <tr><td>10-03</td><td>9</td><td>4,100</td><td><span class="badge orange">62%</span></td><td>76%</td><td>4</td></tr>
+  <tr><td>10-04</td><td>7</td><td>3,500</td><td><span class="badge blue">70%</span></td><td>80%</td><td>2</td></tr>
+  <tr><td>10-05</td><td>5</td><td>2,400</td><td><span class="badge blue">72%</span></td><td>82%</td><td>1</td></tr>
+  <tr><td>10-06</td><td>6</td><td>2,500</td><td><span class="badge orange">68%</span></td><td>78%</td><td>3</td></tr>
+  </table></div>
+`;
+
+pageContent['regional-cobertura'] = `
+  <div class="card"><h3>📖 Cobertura curricular por distrito</h3>
+  <table><tr><th>Distrito</th><th>Mat.</th><th>Leng.</th><th>C.Soc.</th><th>C.Nat.</th><th>Inglés</th><th>General</th></tr>
+  <tr><td>10-01</td><td>85%</td><td>90%</td><td>82%</td><td>88%</td><td>78%</td><td>85%</td></tr>
+  <tr><td>10-02</td><td>78%</td><td>85%</td><td>76%</td><td>80%</td><td>72%</td><td>78%</td></tr>
+  <tr><td>10-03</td><td><span class="badge red">45%</span></td><td>70%</td><td>65%</td><td><span class="badge red">52%</span></td><td>60%</td><td>58%</td></tr>
+  <tr><td>10-04</td><td>72%</td><td>78%</td><td>70%</td><td>75%</td><td>68%</td><td>73%</td></tr>
+  <tr><td>10-05</td><td>75%</td><td>80%</td><td>72%</td><td>76%</td><td>70%</td><td>75%</td></tr>
+  <tr><td>10-06</td><td>68%</td><td>72%</td><td>65%</td><td>70%</td><td>62%</td><td>67%</td></tr>
+  </table>
+  <div style="margin-top:8px;padding:8px 12px;background:#fff3e0;border-radius:6px;font-size:9pt;">
+    ⚠️ <strong>Distrito 10-03</strong> requiere intervención urgente: Matemáticas al 45% y Ciencias Naturales al 52%.
+  </div>
+  </div>
+`;
+
+pageContent['regional-analitica'] = `
+  <div class="card"><h3>📈 Tendencia de rendimiento por asignatura (2025-2026)</h3>
+  <div class="chart-bar"><span style="width:120px;">Matemáticas</span><div class="bar" style="width:62%;background:#c62828;">62% <span style="font-weight:400;">▼ 5%</span></div></div>
+  <div class="chart-bar"><span style="width:120px;">Lengua Española</span><div class="bar" style="width:78%;background:#2e7d32;">78% <span style="font-weight:400;">▲ 3%</span></div></div>
+  <div class="chart-bar"><span style="width:120px;">Ciencias Sociales</span><div class="bar" style="width:70%;background:#42a5f5;">70% <span style="font-weight:400;">▼ 1%</span></div></div>
+  <div class="chart-bar"><span style="width:120px;">Ciencias Naturales</span><div class="bar" style="width:68%;background:#e65100;">68% <span style="font-weight:400;">▼ 4%</span></div></div>
+  <div class="chart-bar"><span style="width:120px;">Inglés</span><div class="bar" style="width:65%;background:#e65100;">65% <span style="font-weight:400;">▼ 2%</span></div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><h3>📋 Deserción por nivel</h3>
+      <div class="chart-bar"><span style="width:100px;">Primaria</span><div class="bar" style="width:22%;background:#42a5f5;">22%</div></div>
+      <div class="chart-bar"><span style="width:100px;">Secundaria 1er ciclo</span><div class="bar" style="width:35%;background:#e65100;">35%</div></div>
+      <div class="chart-bar"><span style="width:100px;">Secundaria 2do ciclo</span><div class="bar" style="width:45%;background:#c62828;">45%</div></div>
+    </div>
+    <div class="card"><h3>🎯 Prioridades de capacitación</h3>
+      <div class="alert-row red">🔴 Matemáticas — 8 centros con rendimiento &lt;60%</div>
+      <div class="alert-row orange">🟠 Ciencias Naturales — 5 centros con cobertura &lt;60%</div>
+      <div class="alert-row blue">🔵 Inglés — 4 centros sin docente especializado</div>
+    </div>
+  </div>
+`;
+
+// ---- NACIONAL ----
+pageContent['nacional-dashboard'] = `
+  <div class="kpi-row">
+    <div class="kpi-card" style="border-left-color:#0a2463;"><div class="num">18</div><div class="label">Regionales</div><div class="sub-label">Cobertura nacional</div></div>
+    <div class="kpi-card" style="border-left-color:#2e7d32;"><div class="num green">2.06M</div><div class="label">Estudiantes</div><div class="sub-label">Sector público</div></div>
+    <div class="kpi-card" style="border-left-color:#c62828;"><div class="num red">32.6%</div><div class="label">Deserción secundaria</div><div class="sub-label">Principal desafío</div></div>
+    <div class="kpi-card" style="border-left-color:#e65100;"><div class="num orange">RD$2,433M</div><div class="label">Ahorro anual</div><div class="sub-label">Con SIGRADE</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card"><h3>🌐 Rendimiento por regional</h3>
+      <div class="chart-bar"><span style="width:120px;">Regional 10 (SD)</span><div class="bar" style="width:76%;background:#42a5f5;">76%</div></div>
+      <div class="chart-bar"><span style="width:120px;">Regional 15 (SD)</span><div class="bar" style="width:78%;background:#2e7d32;">78%</div></div>
+      <div class="chart-bar"><span style="width:120px;">Regional 08 (Santiago)</span><div class="bar" style="width:72%;background:#42a5f5;">72%</div></div>
+      <div class="chart-bar"><span style="width:120px;">Regional 01 (Barahona)</span><div class="bar" style="width:58%;background:#c62828;">58%</div></div>
+      <div class="chart-bar"><span style="width:120px;">Regional 14 (Nagua)</span><div class="bar" style="width:62%;background:#e65100;">62%</div></div>
+    </div>
+    <div class="card"><h3>🔔 Alertas nacionales</h3>
+      <div class="alert-row red">🔴 <strong>Regional 01 (Barahona)</strong> — Rendimiento 58%, deserción 38%</div>
+      <div class="alert-row red">🔴 <strong>Regional 14 (Nagua)</strong> — Cobertura curricular 55% en Matemáticas</div>
+      <div class="alert-row orange">⚠️ <strong>Nacional</strong> — Brecha urbano-rural: 18 puntos de diferencia en rendimiento</div>
+      <div class="alert-row orange">⚠️ <strong>Nacional</strong> — 1,500 centros con conectividad limitada</div>
+    </div>
+  </div>
+  <div class="card"><h3>🤖 Recomendaciones de IA predictiva</h3>
+    <p style="font-size:9pt;">Basado en patrones históricos y datos actuales de asistencia y rendimiento:</p>
+    <ul style="font-size:9pt;margin-top:6px;padding-left:18px;">
+      <li><strong>5 regionales</strong> muestran riesgo alto de incremento de deserción próximo trimestre</li>
+      <li>Intervención recomendada: programa de tutorías focalizadas en <strong>Matemáticas</strong> (asignatura con menor rendimiento nacional)</li>
+      <li>Capacitación docente prioritaria en <strong>Regional 01, 14 y 03</strong></li>
+    </ul>
+  </div>
+`;
+
+pageContent['nacional-regionales'] = `
+  <div class="card"><h3>🗺️ Mapa educativo nacional — 18 Regionales</h3>
+  <table><tr><th>Regional</th><th>Sede</th><th>Distritos</th><th>Estudiantes</th><th>Rendimiento</th><th>Deserción</th></tr>
+  <tr><td>01</td><td>Barahona</td><td>5</td><td>45,200</td><td><span class="badge red">58%</span></td><td>38%</td></tr>
+  <tr><td>02</td><td>San Juan</td><td>4</td><td>38,500</td><td><span class="badge orange">64%</span></td><td>34%</td></tr>
+  <tr><td>03</td><td>Azua</td><td>5</td><td>42,100</td><td><span class="badge orange">62%</span></td><td>36%</td></tr>
+  <tr><td>08</td><td>Santiago</td><td>8</td><td>98,200</td><td><span class="badge blue">72%</span></td><td>28%</td></tr>
+  <tr><td>10</td><td>Santo Domingo</td><td>6</td><td>88,500</td><td><span class="badge blue">76%</span></td><td>25%</td></tr>
+  <tr><td>15</td><td>Santo Domingo</td><td>6</td><td>92,150</td><td><span class="badge green">78%</span></td><td>25%</td></tr>
+  <tr><td style="color:#888;">...</td><td></td><td></td><td></td><td></td><td></td></tr>
+  </table>
+  <div style="margin-top:8px;font-size:8pt;color:#888;">Mostrando 6 de 18 regionales</div>
+  </div>
+`;
+
+pageContent['nacional-mapa'] = `
+  <div class="grid-2">
+    <div class="card"><h3>🌐 Mapa de rendimiento por región</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:8.5pt;">
+        <div style="background:#e8f5e9;padding:8px;border-radius:6px;text-align:center;"><strong>Reg. 10-15</strong><br>77% ✓</div>
+        <div style="background:#e3f2fd;padding:8px;border-radius:6px;text-align:center;"><strong>Reg. 08</strong><br>72% ✓</div>
+        <div style="background:#fff3e0;padding:8px;border-radius:6px;text-align:center;"><strong>Reg. 05-06</strong><br>65% ⚠</div>
+        <div style="background:#ffebee;padding:8px;border-radius:6px;text-align:center;"><strong>Reg. 01-03</strong><br>58% 🔴</div>
+      </div>
+    </div>
+    <div class="card"><h3>📊 Distribución nacional</h3>
+      <div class="chart-bar"><span style="width:100px;">Urbano</span><div class="bar" style="width:76%;background:#2e7d32;">76% rend.</div></div>
+      <div class="chart-bar"><span style="width:100px;">Rural</span><div class="bar" style="width:58%;background:#c62828;">58% rend.</div></div>
+      <div style="margin-top:8px;font-size:8pt;color:#888;">Brecha urbano-rural: 18 puntos porcentuales</div>
+    </div>
+  </div>
+`;
+
+pageContent['nacional-predictivo'] = `
+  <div class="card"><h3>🤖 Analítica predictiva — Riesgo de deserción</h3>
+  <table><tr><th>Regional</th><th>Estudiantes en riesgo</th><th>% de la matrícula</th><th>Factor principal</th><th>Nivel de alerta</th></tr>
+  <tr><td>Regional 01 (Barahona)</td><td>4,520</td><td>10%</td><td>Ausentismo + bajo rendimiento</td><td><span class="badge red">Crítico</span></td></tr>
+  <tr><td>Regional 14 (Nagua)</td><td>3,150</td><td>8.5%</td><td>Baja cobertura curricular</td><td><span class="badge red">Crítico</span></td></tr>
+  <tr><td>Regional 03 (Azua)</td><td>2,800</td><td>6.7%</td><td>Ausentismo crónico</td><td><span class="badge orange">Alto</span></td></tr>
+  <tr><td>Regional 08 (Santiago)</td><td>1,800</td><td>1.8%</td><td>Rendimiento en Matemáticas</td><td><span class="badge orange">Medio</span></td></tr>
+  <tr><td>Regional 10 (SD)</td><td>950</td><td>1.1%</td><td>Factores socioeconómicos</td><td><span class="badge blue">Bajo</span></td></tr>
+  </table>
+  <div style="margin-top:8px;padding:8px 12px;background:#e8f5e9;border-radius:6px;font-size:9pt;">
+    ✅ Intervención temprana podría retener hasta 13,220 estudiantes en riesgo a nivel nacional.
+    Costo estimado de intervención: RD$ 850/estudiante vs. RD$ 137,801 que cuesta un estudiante desertor.
+  </div>
+  </div>
+`;
+
+// ===== APP LOGIC =====
+let currentRole = 'docente';
+let currentPageIdx = 0;
+
+function enterApp() {
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').classList.add('active');
+  switchRole('docente');
+}
+
+function getMenuHtml(role) {
+  const menu = roles[role].menu;
+  return Object.entries(menu).map(([label, icon], i) =>
+    `<div class="menu-item ${i===0?'active':''}" onclick="switchPage('${role}',${i})"><span class="icon">${icon}</span><span>${label}</span></div>`
+  ).join('');
+}
+
+function switchRole(role) {
+  currentRole = role;
+  const data = roles[role];
+  document.getElementById('menu').innerHTML = getMenuHtml(role);
+  document.getElementById('user-avatar').textContent = data.avatar;
+  document.getElementById('user-name').textContent = data.name;
+  document.getElementById('user-role').textContent = data.role;
+  document.querySelectorAll('.role-tab').forEach((t,i) => {
+    const r = ['docente','director','distrito','regional','nacional'][i];
+    t.classList.toggle('active', r === role);
+  });
+  currentPageIdx = 0;
+  switchPage(role, 0);
+}
+
+function switchPage(role, idx) {
+  currentPageIdx = idx;
+  const data = roles[role] || roles.docente;
+  const pageKey = data.pages[idx] || data.pages[0];
+  const content = pageContent[`${role}-${pageKey}`] || pageContent[`docente-dashboard`];
+  const menuItems = document.querySelectorAll('.menu-item');
+  menuItems.forEach((item, i) => item.classList.toggle('active', i === idx));
+
+  const labels = Object.keys(data.menu);
+  document.getElementById('breadcrumb').innerHTML = `<strong>${labels[idx] || labels[0]}</strong> <span style="color:#888;font-weight:400;margin-left:6px;">${roleLabels[role]}</span>`;
+
+  const dotsContainer = document.getElementById('page-dots');
+  dotsContainer.innerHTML = data.pages.map((_, i) =>
+    `<div class="page-dot ${i===idx?'active':''}"></div>`
+  ).join('');
+
+  document.getElementById('content').innerHTML = content;
+}
+
+const roleLabels = { docente: 'Docente', director: 'Director', distrito: 'Distrito Educativo', regional: 'Regional', nacional: 'Nacional (MINERD)' };
+</script>
+</body>
+</html>

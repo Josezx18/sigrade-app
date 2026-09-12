@@ -1,0 +1,20 @@
+import { lazy } from 'react';
+
+export const Login = lazy(() => import('./auth/Login').then(m => ({ default: m.Login })));
+export const Dashboard = lazy(() => import('./dashboard/Dashboard').then(m => ({ default: m.Dashboard })));
+export const Students = lazy(() => import('./students/Students').then(m => ({ default: m.Students })));
+export const StudentsPage = lazy(() => import('./academic/StudentsPage').then(m => ({ default: m.StudentsPage })));
+export const Teachers = lazy(() => import('./teachers/Teachers').then(m => ({ default: m.Teachers })));
+export const Profile = lazy(() => import('./profile/Profile').then(m => ({ default: m.Profile })));
+export const Grades = lazy(() => import('./grades/Grades'));
+export const Attendance = lazy(() => import('./attendance/Attendance'));
+export const Planning = lazy(() => import('./planning/Planning'));
+export const Academic = lazy(() => import('./academic/Academic'));
+export const Analytics = lazy(() => import('./analytics/Analytics'));
+export const Counseling = lazy(() => import('./counseling/Counseling').then(m => ({ default: m.Counseling })));
+export const AI = lazy(() => import('./ai/AI'));
+export const ExportData = lazy(() => import('./export/ExportData'));
+export const QRScanner = lazy(() => import('./qr/QRScanner').then(m => ({ default: m.QRScanner })));
+export const SchoolCalendar = lazy(() => import('./calendar/SchoolCalendar').then(m => ({ default: m.SchoolCalendar })));
+export const FileManager = lazy(() => import('./files/FileManager').then(m => ({ default: m.FileManager })));
+export const Config = lazy(() => import('./config/Config').then(m => ({ default: m.Config })));

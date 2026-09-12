@@ -1,0 +1,367 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { NotFoundException, ConflictException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { TeachersService } from '../teachers.service';
+import { PrismaService } from '@sigrade/shared-prisma';
+import * as bcrypt from 'bcryptjs';
+
+jest.mock('bcryptjs');
+
+describe('TeachersService', () => {
+  let service: TeachersService;
+  let prisma: PrismaService;
+
+  const mockTenant = {
+    id: 'tenant-1',
+    code: 'MINERD-001',
+    name: 'Escuela Primaria',
+    type: 'SCHOOL',
+    parentId: null,
+    settings: {},
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  const mockUser = {
+    id: 'user-1',
+    email: 'teacher@test.com',
+    passwordHash: 'hashed-password',
+    firstName: 'Juan',
+    lastName: 'Pérez',
+    dni: '40212345678',
+    phone: '809-555-1234',
+    tenantId: 'tenant-1',
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  const mockTeacher = {
+    id: 'teacher-1',
+    userId: 'user-1',
+    employeeCode: 'DOC-001',
+    degree: 'Licenciado en Matemáticas',
+    specialization: 'Matemáticas',
+    hireDate: new Date('2020-01-15'),
+    contractType: 'NOMBRADO',
+    tenantId: 'tenant-1',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    user: mockUser,
+  };
+
+  const mockCourse = {
+    id: 'course-1',
+    name: '1ro A',
+    gradeLevelId: 'gl-1',
+    schoolYearId: 'sy-1',
+    tenantId: 'tenant-1',
+    gradeLevel: { id: 'gl-1', name: '1er Grado', ordinal: 1 },
+    schoolYear: { id: 'sy-1', name: '2024-2025' },
+  };
+
+  const mockSubject = {
+    id: 'subject-1',
+    code: 'MAT-001',
+    name: 'Matemáticas',
+    educationLevel: 'PRIMARIA',
+    area: 'MATEMATICAS',
+    tenantId: 'tenant-1',
+  };
+
+  const mockSchoolYear = {
+    id: 'sy-1',
+    name: '2024-2025',
+    tenantId: 'tenant-1',
+  };
+
+  const mockPrisma = {
+    tenant: { findUnique: jest.fn() },
+    user: { findFirst: jest.fn(), findUnique: jest.fn(), create: jest.fn(), update: jest.fn() },
+    teacher: {
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      count: jest.fn(),
+    },
+    teacherAssignment: {
+      findUnique: jest.fn(),
+      findMany: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      count: jest.fn(),
+      aggregate: jest.fn(),
+    },
+    courseSubject: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      count: jest.fn(),
+    },
+    course: {
+      findUnique: jest.fn(),
+      count: jest.fn(),
+    },
+    subject: { findUnique: jest.fn() },
+    schoolYear: { findUnique: jest.fn() },
+    schedule: { findMany: jest.fn() },
+    auditLog: { create: jest.fn() },
+    $transaction: jest.fn(),
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        TeachersService,
+        { provide: PrismaService, useValue: mockPrisma },
+      ],
+    }).compile();
+
+    service = module.get<TeachersService>(TeachersService);
+    prisma = module.get<PrismaService>(PrismaService);
+    jest.clearAllMocks();
+  });
+
+  describe('create', () => {
+    it('should create a teacher successfully', async () => {
+      mockPrisma.tenant.findUnique.mockResolvedValue(mockTenant);
+      mockPrisma.user.findFirst.mockResolvedValue(null);
+      mockPrisma.teacher.findUnique.mockResolvedValue(null);
+      (bcrypt.hash as jest.Mock).mockResolvedValue('hashed-password');
+      mockPrisma.user.create.mockResolvedValue(mockUser);
+      mockPrisma.teacher.create.mockResolvedValue(mockTeacher);
+
+      const result = await service.create('tenant-1', {
+        email: 'teacher@test.com',
+        password: 'password123',
+        firstName: 'Juan',
+        lastName: 'Pérez',
+        dni: '40212345678',
+        phone: '809-555-1234',
+        employeeCode: 'DOC-001',
+        degree: 'Licenciado en Matemáticas',
+        specialization: 'Matemáticas',
+        hireDate: '2020-01-15',
+        contractType: 'NOMBRADO',
+      });
+
+      expect(result).toEqual({
+        id: 'teacher-1',
+        userId: 'user-1',
+        employeeCode: 'DOC-001',
+        degree: 'Licenciado en Matemáticas',
+        specialization: 'Matemáticas',
+        hireDate: mockTeacher.hireDate,
+        contractType: 'NOMBRADO',
+        tenantId: 'tenant-1',
+        user: {
+          id: 'user-1',
+          email: 'teacher@test.com',
+          firstName: 'Juan',
+          lastName: 'Pérez',
+          dni: '40212345678',
+          phone: '809-555-1234',
+          isActive: true,
+        },
+      });
+    });
+
+    it('should throw ConflictException if email already exists', async () => {
+      mockPrisma.tenant.findUnique.mockResolvedValue(mockTenant);
+      mockPrisma.user.findFirst.mockResolvedValue(mockUser);
+
+      await expect(
+        service.create('tenant-1', {
+          email: 'teacher@test.com',
+          password: 'password123',
+          firstName: 'Juan',
+          lastName: 'Pérez',
+          dni: '40212345678',
+          employeeCode: 'DOC-002',
+          hireDate: '2020-01-15',
+          contractType: 'NOMBRADO',
+        }),
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it('should throw ConflictException if employee code already exists', async () => {
+      mockPrisma.tenant.findUnique.mockResolvedValue(mockTenant);
+      mockPrisma.user.findFirst.mockResolvedValue(null);
+      mockPrisma.teacher.findUnique.mockResolvedValue(mockTeacher);
+
+      await expect(
+        service.create('tenant-1', {
+          email: 'new@test.com',
+          password: 'password123',
+          firstName: 'Juan',
+          lastName: 'Pérez',
+          dni: '40212345679',
+          employeeCode: 'DOC-001',
+          hireDate: '2020-01-15',
+          contractType: 'NOMBRADO',
+        }),
+      ).rejects.toThrow(ConflictException);
+    });
+  });
+
+  describe('findAll', () => {
+    it('should return all teachers for a tenant', async () => {
+      mockPrisma.teacher.findMany.mockResolvedValue([mockTeacher]);
+
+      const result = await service.findAll('tenant-1');
+
+      expect(result).toHaveLength(1);
+      expect(mockPrisma.teacher.findMany).toHaveBeenCalledWith({
+        where: { tenantId: 'tenant-1' },
+        include: { user: true },
+        orderBy: { user: { lastName: 'asc' } },
+      });
+    });
+  });
+
+  describe('findById', () => {
+    it('should return teacher by ID', async () => {
+      mockPrisma.teacher.findUnique.mockResolvedValue(mockTeacher);
+
+      const result = await service.findById('teacher-1');
+
+      expect(result.id).toBe('teacher-1');
+    });
+
+    it('should throw NotFoundException if teacher not found', async () => {
+      mockPrisma.teacher.findUnique.mockResolvedValue(null);
+
+      await expect(service.findById('invalid-id')).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('createAssignment', () => {
+    it('should create teacher assignment successfully', async () => {
+      mockPrisma.teacher.findUnique.mockResolvedValue(mockTeacher);
+      mockPrisma.course.findUnique.mockResolvedValue(mockCourse);
+      mockPrisma.subject.findUnique.mockResolvedValue(mockSubject);
+      mockPrisma.schoolYear.findUnique.mockResolvedValue(mockSchoolYear);
+      mockPrisma.teacherAssignment.findUnique.mockResolvedValue(null);
+      mockPrisma.teacherAssignment.create.mockResolvedValue({
+        id: 'assignment-1',
+        teacherId: 'teacher-1',
+        courseId: 'course-1',
+        subjectId: 'subject-1',
+        hoursWeekly: 5,
+        schoolYearId: 'sy-1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      const result = await service.createAssignment({
+        teacherId: 'teacher-1',
+        courseId: 'course-1',
+        subjectId: 'subject-1',
+        hoursWeekly: 5,
+        schoolYearId: 'sy-1',
+      });
+
+      expect(result).toBeDefined();
+      expect(result.hoursWeekly).toBe(5);
+    });
+
+    it('should throw ForbiddenException if tenant mismatch', async () => {
+      mockPrisma.teacher.findUnique.mockResolvedValue({ ...mockTeacher, tenantId: 'tenant-1' });
+      mockPrisma.course.findUnique.mockResolvedValue({ ...mockCourse, tenantId: 'tenant-2' });
+      mockPrisma.subject.findUnique.mockResolvedValue({ ...mockSubject, tenantId: 'tenant-1' });
+      mockPrisma.schoolYear.findUnique.mockResolvedValue({ ...mockSchoolYear, tenantId: 'tenant-1' });
+
+      await expect(
+        service.createAssignment({
+          teacherId: 'teacher-1',
+          courseId: 'course-1',
+          subjectId: 'subject-1',
+          hoursWeekly: 5,
+          schoolYearId: 'sy-1',
+        }),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should throw ConflictException if assignment already exists', async () => {
+      mockPrisma.teacher.findUnique.mockResolvedValue(mockTeacher);
+      mockPrisma.course.findUnique.mockResolvedValue(mockCourse);
+      mockPrisma.subject.findUnique.mockResolvedValue(mockSubject);
+      mockPrisma.schoolYear.findUnique.mockResolvedValue(mockSchoolYear);
+      mockPrisma.teacherAssignment.findUnique.mockResolvedValue({ id: 'existing' });
+
+      await expect(
+        service.createAssignment({
+          teacherId: 'teacher-1',
+          courseId: 'course-1',
+          subjectId: 'subject-1',
+          hoursWeekly: 5,
+          schoolYearId: 'sy-1',
+        }),
+      ).rejects.toThrow(ConflictException);
+    });
+  });
+
+  describe('getSchedules', () => {
+    it('should return teacher schedules', async () => {
+      mockPrisma.teacher.findUnique.mockResolvedValue(mockTeacher);
+      mockPrisma.courseSubject.findMany.mockResolvedValue([
+        { id: 'cs-1', courseId: 'course-1', subject: mockSubject, schedules: [] },
+      ]);
+      mockPrisma.schedule.findMany.mockResolvedValue([
+        {
+          id: 'sched-1',
+          courseId: 'course-1',
+          courseSubjectId: 'cs-1',
+          dayOfWeek: 1,
+          startTime: '08:00',
+          endTime: '08:50',
+          classroom: 'Aula 101',
+          course: mockCourse,
+          courseSubject: { subject: mockSubject },
+        },
+      ]);
+
+      const result = await service.getSchedules('teacher-1');
+
+      expect(result).toHaveLength(1);
+      expect(result[0].subjectName).toBe('Matemáticas');
+    });
+  });
+
+  describe('getTeacherStats', () => {
+    it('should return teacher statistics', async () => {
+      mockPrisma.teacher.findUnique.mockResolvedValue(mockTeacher);
+      mockPrisma.teacherAssignment.count.mockResolvedValue(3);
+      mockPrisma.courseSubject.count.mockResolvedValue(4);
+      mockPrisma.course.count.mockResolvedValue(1);
+      mockPrisma.teacherAssignment.aggregate.mockResolvedValue({ _sum: { hoursWeekly: 15 } });
+
+      const result = await service.getTeacherStats('teacher-1');
+
+      expect(result).toEqual({
+        totalAssignments: 3,
+        totalCourseSubjects: 4,
+        tutoredCourses: 1,
+        totalHoursWeekly: 15,
+      });
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete teacher and deactivate user', async () => {
+      mockPrisma.teacher.findUnique.mockResolvedValue(mockTeacher);
+      mockPrisma.$transaction.mockImplementation(async (fn) => fn(mockPrisma));
+      mockPrisma.teacher.delete.mockResolvedValue({});
+      mockPrisma.user.update.mockResolvedValue({});
+
+      await service.delete('teacher-1');
+
+      expect(mockPrisma.teacher.delete).toHaveBeenCalledWith({ where: { id: 'teacher-1' } });
+      expect(mockPrisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'user-1' },
+        data: { isActive: false },
+      });
+    });
+  });
+});

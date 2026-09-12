@@ -1,0 +1,102 @@
+name: E2E
+
+on:
+  push:
+    branches: [master, main, develop]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: sigrade
+          POSTGRES_PASSWORD: sigrade_dev
+          POSTGRES_DB: sigrade
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sigrade -d sigrade"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      minio:
+        image: minio/minio:latest
+        env:
+          MINIO_ROOT_USER: sigrade
+          MINIO_ROOT_PASSWORD: sigrade_dev
+        ports:
+          - 9000:9000
+          - 9001:9001
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live"
+          --health-interval 30s
+          --health-timeout 20s
+          --health-retries 3
+
+    env:
+      DATABASE_URL: "postgresql://sigrade:sigrade_dev@localhost:5432/sigrade?schema=public"
+      APP_DATABASE_URL: "postgresql://sigrade_app:sigrade_app_dev@localhost:5432/sigrade?schema=public"
+      JWT_SECRET: "ci-jwt-secret-long-enough-for-signing"
+      JWT_REFRESH_SECRET: "ci-jwt-refresh-secret-long-enough"
+      MINIO_ENDPOINT: "localhost"
+      MINIO_PORT: 9000
+      MINIO_USE_SSL: "false"
+      MINIO_ACCESS_KEY: "sigrade"
+      MINIO_SECRET_KEY: "sigrade_dev"
+      MINIO_BUCKET_EVIDENCES: "sigrade-evidences"
+      MINIO_BUCKET_DOCUMENTS: "sigrade-documents"
+      MINIO_BUCKET_AVATARS: "sigrade-avatars"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Apply migrations
+        run: npx prisma migrate deploy
+
+      - name: Enable row-level security policies
+        run: |
+          command -v psql || (apt-get update && apt-get install -y postgresql-client)
+          psql "$DATABASE_URL" -f prisma/apply-rls.sql
+
+      - name: Seed the database
+        run: npx prisma db seed
+
+      - name: API unit tests
+        run: npx nx run api:test -- --testPathPatterns="test/unit"
+
+      - name: API e2e tests (includes RLS isolation + MinIO upload)
+        run: npx nx run api:test -- --testPathPatterns="e2e-spec"
+
+      - name: API lint
+        run: npx nx run api:lint
+
+      - name: Web lint
+        run: npx nx run web:lint
+
+      - name: Build web
+        run: npx nx run web:build

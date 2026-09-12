@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGRADE — Comparativa: Situación Actual vs. Sistema Digital</title>
+<style>
+  @page { margin: 1.8cm; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    color: #1a1a2e; line-height: 1.6; font-size: 10.5pt;
+    background: #f0f2f5;
+  }
+  .page {
+    max-width: 210mm; margin: 0 auto; background: #fff;
+    padding: 35px 42px; box-shadow: 0 0 20px rgba(0,0,0,.08);
+  }
+  h1 { font-size: 24pt; color: #0a2463; margin-bottom: 4px; letter-spacing: -.5px; }
+  h2 {
+    font-size: 15pt; color: #0a2463; border-bottom: 3px solid #1e88e5;
+    padding-bottom: 5px; margin: 32px 0 16px; page-break-after: avoid;
+  }
+  h3 { font-size: 12pt; color: #1a3a6b; margin: 20px 0 10px; }
+  h4 { font-size: 10.5pt; color: #333; margin: 14px 0 6px; }
+  p, li { margin-bottom: 6px; color: #333; font-size: 10pt; }
+  .subtitle { font-size: 13pt; color: #555; margin-bottom: 20px; }
+
+  /* ===== COVER ===== */
+  .cover {
+    text-align: center; padding: 70px 40px 50px; margin: -35px -42px 30px;
+    background: linear-gradient(135deg, #0a2463 0%, #1e88e5 60%, #0d47a1 100%);
+    color: #fff; page-break-after: always;
+  }
+  .cover h1 { font-size: 28pt; color: #fff; margin-bottom: 10px; }
+  .cover .sub { font-size: 15pt; color: #bbdefb; margin-bottom: 24px; }
+  .cover .icon { font-size: 44pt; margin-bottom: 14px; }
+  .cover .org { font-size: 11pt; color: #bbdefb; margin-top: 36px; }
+  .cover .date { font-size: 10pt; color: #90caf9; margin-top: 4px; }
+
+  /* ===== FLOW DIAGRAM ===== */
+  .flow-section { margin: 20px 0; }
+  .flow-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 6px 0; flex-wrap: wrap; }
+  .flow-box {
+    padding: 10px 14px; border-radius: 8px; text-align: center;
+    font-size: 9pt; font-weight: 600; min-width: 100px; position: relative;
+  }
+  .flow-box.actual { background: #ffebee; border: 2px solid #ef9a9a; color: #b71c1c; }
+  .flow-box.sigrade { background: #e8f5e9; border: 2px solid #a5d6a7; color: #1b5e20; }
+  .flow-box.level { background: #e3f2fd; border: 2px solid #90caf9; color: #0d47a1; }
+  .flow-arrow { font-size: 16pt; font-weight: 700; }
+  .flow-arrow.dashed { color: #ef5350; opacity: .5; }
+  .flow-arrow.solid { color: #43a047; }
+  .flow-label { font-size: 8pt; text-align: center; margin: 2px 0; }
+  .flow-label.loss { color: #c62828; font-weight: 600; }
+  .flow-label.gain { color: #2e7d32; font-weight: 600; }
+
+  /* ===== PROCESS COMPARISON CARDS ===== */
+  .proc-card {
+    border-radius: 10px; overflow: hidden; margin: 16px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06); border: 1px solid #e0e0e0;
+  }
+  .proc-header {
+    padding: 12px 18px; color: #fff; font-weight: 700; font-size: 11pt;
+  }
+  .proc-header.calif { background: linear-gradient(135deg, #1565c0, #1976d2); }
+  .proc-header.asist { background: linear-gradient(135deg, #2e7d32, #388e3c); }
+  .proc-header.planif { background: linear-gradient(135deg, #e65100, #ef6c00); }
+  .proc-header.report { background: linear-gradient(135deg, #6a1b9a, #7b1fa2); }
+  .proc-body { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  .proc-col { padding: 14px 18px; }
+  .proc-col.actual { background: #fff5f5; border-right: 1px solid #ffcdd2; }
+  .proc-col.sigrade { background: #f5fff5; }
+  .proc-col h4 { margin-bottom: 6px; font-size: 10.5pt; }
+  .proc-col h4 .badge { display: inline-block; font-size: 8pt; padding: 1px 8px; border-radius: 10px; color: #fff; margin-left: 6px; }
+  .badge.red { background: #c62828; }
+  .badge.green { background: #2e7d32; }
+  .proc-step { padding: 4px 0; border-bottom: 1px dashed #e0e0e0; font-size: 9.5pt; }
+  .proc-step:last-child { border: none; }
+  .proc-step .step-num { display: inline-block; width: 20px; height: 20px; border-radius: 50%; text-align: center; font-size: 8pt; font-weight: 700; color: #fff; margin-right: 6px; line-height: 20px; }
+  .num-red { background: #ef5350; }
+  .num-green { background: #66bb6a; }
+  .loss-tag { display: inline-block; background: #ffcdd2; color: #b71c1c; font-size: 8pt; padding: 1px 8px; border-radius: 10px; margin: 2px 0; }
+  .gain-tag { display: inline-block; background: #c8e6c9; color: #1b5e20; font-size: 8pt; padding: 1px 8px; border-radius: 10px; margin: 2px 0; }
+  .data-loss { background: #fff3e0; border-left: 3px solid #ff9800; padding: 8px 12px; margin: 6px 0; font-size: 9pt; border-radius: 0 4px 4px 0; }
+  .data-gain { background: #e8f5e9; border-left: 3px solid #43a047; padding: 8px 12px; margin: 6px 0; font-size: 9pt; border-radius: 0 4px 4px 0; }
+
+  /* ===== DASHBOARD MOCKUPS ===== */
+  .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 12px 0; }
+  .dash-card { border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; }
+  .dash-card h4 { padding: 8px 12px; margin: 0; font-size: 10pt; color: #fff; }
+  .dash-card h4.dash-red { background: #c62828; }
+  .dash-card h4.dash-green { background: #0a2463; }
+  .dash-table { width: 100%; border-collapse: collapse; font-size: 8.5pt; }
+  .dash-table th { background: #f5f5f5; padding: 5px 8px; text-align: left; font-weight: 600; font-size: 8pt; color: #555; }
+  .dash-table td { padding: 4px 8px; border-bottom: 1px solid #f0f0f0; }
+  .dash-table .alert { background: #ffebee; }
+  .dash-table .alert-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+  .dot-red { background: #c62828; }
+  .dot-orange { background: #e65100; }
+  .dot-green { background: #2e7d32; }
+  .insight-box { background: #e3f2fd; border-radius: 6px; padding: 10px 14px; margin: 8px 0; }
+  .insight-box h4 { color: #0a2463; margin-bottom: 4px; font-size: 10pt; }
+  .insight-box p { font-size: 9pt; }
+
+  /* ===== BENEFITS ROW ===== */
+  .bene-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0; }
+  .bene-card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; text-align: center; font-size: 9pt; background: #fafcff; }
+  .bene-card .num-big { font-size: 20pt; font-weight: 800; color: #0a2463; }
+  .bene-card .num-big.green { color: #2e7d32; }
+  .bene-card .num-big.red { color: #c62828; }
+  .bene-card .label { font-size: 8.5pt; color: #666; }
+
+  @media print {
+    body { background: #fff; }
+    .page { box-shadow: none; padding: 0; max-width: 100%; }
+    .cover { margin: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ===== PORTADA ===== -->
+<div class="cover">
+  <div class="icon">&#x1F4CA;</div>
+  <h1>MINERD: Situación Actual vs. SIGRADE</h1>
+  <div class="sub">Cómo funciona hoy el sistema educativo dominicano y cómo transformaría su gestión la digitalización integral</div>
+  <hr style="width:100px;border-color:#64b5f6;margin:20px auto;">
+  <div class="org">Ministerio de Educación de la República Dominicana</div>
+  <div class="date">Julio 2026</div>
+</div>
+
+<!-- ===== INTRO ===== -->
+<h2>1. El Problema de Fondo: Datos que se Pierden en el Camino</h2>
+<p>
+  Hoy, el MINERD recolecta enormes volúmenes de datos, pero la mayoría se pierde, se agrega
+  en exceso o llega demasiado tarde. El problema no es la falta de información, sino que
+  <strong>la granularidad se destruye en cada nivel de la cadena</strong>:
+</p>
+
+<div class="flow-section">
+  <div class="flow-label" style="font-weight:700;font-size:10pt;color:#555;">FLUJO ACTUAL — CÓMO SE PIERDEN LOS DATOS</div>
+  <div class="flow-row">
+    <div class="flow-box actual" style="min-width:120px;">Docente<br><span style="font-weight:400;font-size:8pt;">Registro físico</span></div>
+    <div class="flow-arrow dashed">&#x2192;</div>
+    <div class="flow-box actual">Escuela<br><span style="font-weight:400;font-size:8pt;">Consolida en papel</span></div>
+    <div class="flow-arrow dashed">&#x2192;</div>
+    <div class="flow-box actual">Distrito<br><span style="font-weight:400;font-size:8pt;">Resume en Excel</span></div>
+    <div class="flow-arrow dashed">&#x2192;</div>
+    <div class="flow-box actual">Regional<br><span style="font-weight:400;font-size:8pt;">Agrega por distrito</span></div>
+    <div class="flow-arrow dashed">&#x2192;</div>
+    <div class="flow-box actual">MINERD<br><span style="font-weight:400;font-size:8pt;">Recibe totales</span></div>
+  </div>
+  <div class="flow-row" style="gap:4px;">
+    <span class="flow-label loss">Pérdida: dato del estudiante individual</span>
+    <span class="flow-label loss" style="margin-left:50px;">Pérdida: dato por asignatura</span>
+    <span class="flow-label loss" style="margin-left:60px;">Pérdida: dato por centro</span>
+    <span class="flow-label loss" style="margin-left:40px;">Pérdida: dato semanal</span>
+    <span class="flow-label loss">Solo quedan promedios anuales</span>
+  </div>
+</div>
+
+<div class="flow-section" style="margin-top:18px;">
+  <div class="flow-label" style="font-weight:700;font-size:10pt;color:#2e7d32;">FLUJO CON SIGRADE — DATOS GRANULARES EN TIEMPO REAL</div>
+  <div class="flow-row">
+    <div class="flow-box sigrade" style="min-width:120px;">Docente<br><span style="font-weight:400;font-size:8pt;">App/Web offline</span></div>
+    <div class="flow-arrow solid">&#x2194;</div>
+    <div class="flow-box level">SIGRADE Cloud<br><span style="font-weight:400;font-size:8pt;">Base de datos central</span></div>
+    <div class="flow-arrow solid">&#x2194;</div>
+    <div class="flow-box level" style="background:#e8f5e9;border-color:#a5d6a7;color:#1b5e20;">Dashboard<br><span style="font-weight:400;font-size:8pt;">Todos los niveles</span></div>
+  </div>
+  <div class="flow-row" style="gap:4px;">
+    <span class="flow-label gain">Dato por estudiante, por asignatura, por evaluación</span>
+    <span class="flow-label gain" style="margin-left:100px;">Visible en vivo: MINERD, Regionales, Distritos, Centros</span>
+  </div>
+</div>
+
+<div class="bene-grid">
+  <div class="bene-card">
+    <div class="num-big red">32.6%</div>
+    <div class="label">Deserción en secundaria (sin alertas tempranas)</div>
+  </div>
+  <div class="bene-card">
+    <div class="num-big red">2-6</div>
+    <div class="label">Semanas tarda un reporte en llegar del aula al MINERD</div>
+  </div>
+  <div class="bene-card">
+    <div class="num-big green">100%</div>
+    <div class="label">De los datos disponibles <strong>en vivo</strong> con SIGRADE</div>
+  </div>
+  <div class="bene-card">
+    <div class="num-big green">RD$2,433M</div>
+    <div class="label">Ahorro anual estimado al eliminar procesos manuales</div>
+  </div>
+  <div class="bene-card">
+    <div class="num-big">7,931</div>
+    <div class="label">Centros educativos públicos conectados en una sola plataforma</div>
+  </div>
+  <div class="bene-card">
+    <div class="num-big green">2.06M</div>
+    <div class="label">Estudiantes con trazabilidad académica completa</div>
+  </div>
+</div>
+
+<!-- ===== CALIFICACIONES ===== -->
+<h2>2. Proceso: Calificaciones</h2>
+
+<div class="proc-card">
+  <div class="proc-header calif">&#x1F4D6; Calificaciones — Del registro físico al dashboard analítico</div>
+  <div class="proc-body">
+    <div class="proc-col actual">
+      <h4>Situación Actual <span class="badge red">SIN SIGRADE</span></h4>
+      <div class="proc-step"><span class="step-num num-red">1</span> Docente evalúa y anota calificaciones en el <strong>Registro de Grado físico</strong> (libreta oficial).</div>
+      <div class="proc-step"><span class="step-num num-red">2</span> Al final del parcial, el docente traslada manualmente las notas al <strong>Acta de Calificaciones</strong> impresa.</div>
+      <div class="proc-step"><span class="step-num num-red">3</span> El director del centro firma, sella y <strong>envía físico</strong> al Distrito Educativo.</div>
+      <div class="proc-step"><span class="step-num num-red">4</span> El Distrito <strong>consolida en Excel</strong> los datos de todos sus centros y envía a la Regional.</div>
+      <div class="proc-step"><span class="step-num num-red">5</span> La Regional consolida y envía al MINERD (sede central).</div>
+      <div class="proc-step"><span class="step-num num-red">6</span> MINERD recibe <strong>únicamente:</strong> % aprobados, % reprobados, % promovidos por centro y nivel.</div>
+      <div class="data-loss">
+        <strong>&#x26A0; Datos perdidos:</strong> nota por estudiante, por asignatura, por evaluación. Progresión durante el año.
+        Tampoco se sabe <em>cuándo</em> el docente evaluó (si al final del parcial o durante el proceso).
+      </div>
+    </div>
+    <div class="proc-col sigrade">
+      <h4>Con SIGRADE <span class="badge green">DIGITAL</span></h4>
+      <div class="proc-step"><span class="step-num num-green">1</span> Docente ingresa cada evaluación en la <strong>app o web</strong> (funciona sin internet).</div>
+      <div class="proc-step"><span class="step-num num-green">2</span> El sistema calcula automáticamente promedios, acumulados y tendencias.</div>
+      <div class="proc-step"><span class="step-num num-green">3</span> Las calificaciones están disponibles <strong>en tiempo real</strong> para director, distrito, regional y MINERD.</div>
+      <div class="proc-step"><span class="step-num num-green">4</span> MINERD visualiza: promedio por asignatura, por centro, por distrito, por regional. Con <strong>drill-down</strong> hasta el estudiante individual.</div>
+      <div class="proc-step"><span class="step-num num-green">5</span> Alertas automáticas: centros con bajo rendimiento en matemática, estudiantes en riesgo deRepitencia.</div>
+      <div class="data-gain">
+        <strong>&#x2705; Datos ganados:</strong> rendimiento por asignatura a nivel nacional. Identificación de centros
+        que necesitan intervención. Detección de áreas específicas donde se requiere capacitación docente.
+        Trazabilidad de la evaluación durante todo el año escolar.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="insight-box">
+  <h4>&#x1F4CA; Lo que MINERD ve HOY vs. lo que PODRÍA VER con SIGRADE</h4>
+  <p style="margin-top:8px;">
+    <strong>Hoy:</strong> "El 78% de los estudiantes de 1er ciclo de secundaria fue promovido en la Regional 10."<br>
+    <strong>Con SIGRADE:</strong> "En la Regional 10, el promedio en Matemáticas es de 62/100. Hay 14 centros con
+    promedio inferior a 55. El distrito 10-03 tiene 3 centros críticos. Se recomienda intervención focalizada
+    en pensamiento lógico-matemático para 4to grado. Estos son los 5 docentes cuyos estudiantes tienen el
+    rendimiento más bajo consistentemente."
+  </p>
+</div>
+
+<!-- ===== ASISTENCIA ===== -->
+<h2>3. Proceso: Asistencia Diaria</h2>
+
+<div class="proc-card">
+  <div class="proc-header asist">&#x1F4C5; Asistencia — De números agregados a trazabilidad por estudiante</div>
+  <div class="proc-body">
+    <div class="proc-col actual">
+      <h4>Situación Actual <span class="badge red">SIN SIGRADE</span></h4>
+      <div class="proc-step"><span class="step-num num-red">1</span> Docente marca asistencia en el <strong>Listado Diario</strong> (libro físico o lista impresa).</div>
+      <div class="proc-step"><span class="step-num num-red">2</span> Al final del día, suma: "Hoy asistieron 32 de 38 estudiantes."</div>
+      <div class="proc-step"><span class="step-num num-red">3</span> La escuela reporta semanal/mensualmente el <strong>total de asistentes</strong> al Distrito.</div>
+      <div class="proc-step"><span class="step-num num-red">4</span> El Distrito consolida y envía a la Regional.</div>
+      <div class="proc-step"><span class="step-num num-red">5</span> MINERD recibe: "En el centro X, la asistencia promedio fue de 85% en el mes de octubre."</div>
+      <div class="proc-step" style="color:#c62828;font-weight:600;"><span class="step-num num-red">&#x2717;</span> NO se sabe qué estudiante faltó, cuántas veces, ni por qué.</div>
+      <div class="data-loss">
+        <strong>&#x26A0; Datos perdidos:</strong> Identidad del estudiante ausente. Patrones de ausentismo
+        (lunes vs viernes, mañana vs tarde). Acumulado de inasistencias por estudiante. Correlación
+        entre ausentismo y rendimiento. Alertas de abandono.
+      </div>
+    </div>
+    <div class="proc-col sigrade">
+      <h4>Con SIGRADE <span class="badge green">DIGITAL</span></h4>
+      <div class="proc-step"><span class="step-num num-green">1</span> Docente marca asistencia <strong>por estudiante individual</strong> en app (offline).</div>
+      <div class="proc-step"><span class="step-num num-green">2</span> El sistema consolida automáticamente: % de asistencia por estudiante, por sección, por centro.</div>
+      <div class="proc-step"><span class="step-num num-green">3</span> <strong>Alertas automáticas</strong> al consejero y director si un estudiante acumula 3, 5, 10 faltas consecutivas.</div>
+      <div class="proc-step"><span class="step-num num-green">4</span> Patrones detectados: ausentismo estacional, diferencias por género, por nivel, por jornada.</div>
+      <div class="proc-step"><span class="step-num num-green">5</span> MINERD visualiza en vivo: mapa de asistencia por regional, distrito, centro. Estudiantes en
+        <strong>riesgo de deserción</strong> identificados automáticamente.</div>
+      <div class="data-gain">
+        <strong>&#x2705; Datos ganados:</strong> trazabilidad completa de asistencia por estudiante. Alertas
+        tempranas de abandono. Patrones de ausentismo por región, nivel, jornada. Correlación
+        asistencia-rendimiento. Base para políticas focalizadas de retención.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="insight-box">
+  <h4>&#x1F50D; El costo de no tener datos de asistencia por estudiante</h4>
+  <p style="margin-top:8px;">
+    El estudio IDEC 2026 identificó que el <strong>32.6%</strong> de los estudiantes de secundaria
+    abandona antes de graduarse. De ellos, el <strong>87%</strong> pertenece al sector público.
+    La asistencia irregular es el principal predictor de deserción, pero hoy el MINERD no tiene
+    forma de detectar a tiempo qué estudiante está en riesgo. Con SIGRADE, las alertas permitirían
+    intervenir semanas o meses antes del abandono. Una reducción de solo el 10% en la tasa de
+    deserción representaría <strong>~5,300 estudiantes retenidos por año</strong>.
+  </p>
+</div>
+
+<!-- ===== PLANIFICACIÓN DOCENTE ===== -->
+<h2>4. Proceso: Planificación Docente</h2>
+
+<div class="proc-card">
+  <div class="proc-header planif">&#x1F4DD; Planificación — De documentos aislados a supervisión curricular en vivo</div>
+  <div class="proc-body">
+    <div class="proc-col actual">
+      <h4>Situación Actual <span class="badge red">SIN SIGRADE</span></h4>
+      <div class="proc-step"><span class="step-num num-red">1</span> Cada docente elabora su planificación en <strong>Word o a mano</strong>, conformatos variados.</div>
+      <div class="proc-step"><span class="step-num num-red">2</span> Imprime y <strong>archiva físicamente</strong> en el centro. Sin respaldo digital.</div>
+      <div class="proc-step"><span class="step-num num-red">3</span> La supervisión es <strong>presencial y esporádica</strong> (1-2 visitas al año, si acaso).</div>
+      <div class="proc-step"><span class="step-num num-red">4</span> No hay visibilidad de: qué se está enseñando, si se cubre el currículo, cómo se evalúa.</div>
+      <div class="proc-step"><span class="step-num num-red">5</span> Cuando un docente se ausenta, no hay plan de respaldo accesible.</div>
+      <div class="data-loss">
+        <strong>&#x26A0; Datos perdidos:</strong> Cobertura curricular real. Alineación con el
+        currículo MINERD. Progresión de contenidos. Diferencias entre centros y regiones.
+        Identificación de buenas prácticas.
+      </div>
+    </div>
+    <div class="proc-col sigrade">
+      <h4>Con SIGRADE <span class="badge green">DIGITAL</span></h4>
+      <div class="proc-step"><span class="step-num num-green">1</span> Docente crea planificación en la plataforma con <strong>plantillas alineadas al currículo MINERD</strong>.</div>
+      <div class="proc-step"><span class="step-num num-green">2</span> <strong>IA asistida</strong> sugiere objetivos, competencias, actividades y recursos según el nivel y área.</div>
+      <div class="proc-step"><span class="step-num num-green">3</span> El director y el distrito pueden <strong>supervisar en vivo</strong> la cobertura curricular.</div>
+      <div class="proc-step"><span class="step-num num-green">4</span> MINERD visualiza: qué unidades se están impartiendo, en qué fechas, con qué metodologías.</div>
+      <div class="proc-step"><span class="step-num num-green">5</span> Identificación de <strong>brechas curriculares</strong>: contenidos que no se cubren en ciertas regiones, áreas donde se necesita capacitación docente.</div>
+      <div class="data-gain">
+        <strong>&#x2705; Datos ganados:</strong> Mapa nacional de cobertura curricular. Detección de
+        necesidades de formación docente por área y región. Estandarización de calidad educativa.
+        Banco de buenas prácticas y planificaciones ejemplares.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REPORTES Y COMUNICACIÓN ===== -->
+<h2>5. Proceso: Reportes y Comunicación</h2>
+
+<div class="proc-card">
+  <div class="proc-header report">&#x1F4E1; Reportes — De semanas de retraso a dashboards en tiempo real</div>
+  <div class="proc-body">
+    <div class="proc-col actual">
+      <h4>Situación Actual <span class="badge red">SIN SIGRADE</span></h4>
+      <div class="proc-step"><span class="step-num num-red">1</span> Cada centro produce reportes <strong>impresos</strong> (calificaciones, asistencia, estadísticas).</div>
+      <div class="proc-step"><span class="step-num num-red">2</span> El personal administrativo del centro destina ~10h/semana a <strong>llenar formularios y consolidar datos</strong>.</div>
+      <div class="proc-step"><span class="step-num num-red">3</span> Los documentos viajan físicamente o por correo electrónico <strong>sin estandarización</strong>.</div>
+      <div class="proc-step"><span class="step-num num-red">4</span> En el distrito, alguien transcribe los datos a Excel. En la regional, se consolidan nuevamente.</div>
+      <div class="proc-step"><span class="step-num num-red">5</span> MINERD recibe reportes <strong>2 a 6 semanas después</strong> del período reportado. Para cuando se analizan, la información ya no refleja la realidad.</div>
+      <div class="data-loss">
+        <strong>&#x26A0; Datos perdidos:</strong> Capacidad de reacción. Decisiones informadas.
+        Información desactualizada al llegar. Múltiples transcripciones = múltiples fuentes de error.
+      </div>
+    </div>
+    <div class="proc-col sigrade">
+      <h4>Con SIGRADE <span class="badge green">DIGITAL</span></h4>
+      <div class="proc-step"><span class="step-num num-green">1</span> Todos los datos se ingresan una sola vez, en el origen (el aula).</div>
+      <div class="proc-step"><span class="step-num num-green">2</span> Los reportes se generan <strong>automáticamente</strong> con un clic. Sin transcripciones.</div>
+      <div class="proc-step"><span class="step-num num-green">3</span> Cada nivel tiene su dashboard: MINERD ve el panorama nacional, la regional ve sus distritos, el distrito ve sus centros.</div>
+      <div class="proc-step"><span class="step-num num-green">4</span> Exportación a Excel/PDF para trámites formales. Datos <strong>siempre actualizados</strong>.</div>
+      <div class="proc-step"><span class="step-num num-green">5</span> Comunicación bidireccional: MINERD puede enviar directrices, circulares y alertas a todos los niveles instantáneamente.</div>
+      <div class="data-gain">
+        <strong>&#x2705; Datos ganados:</strong> Tiempo real. Toma de decisiones ágil. Reducción de
+        errores de transcripción. Ahorro de ~10h/semana por escuela (7,931 escuelas = ~3.2M horas/año).
+        Capacidad de responder a crisis educativas en días, no en meses.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD COMPARISON ===== -->
+<h2>6. Dashboard Comparativo: Lo que ve MINERD hoy vs. con SIGRADE</h2>
+
+<div class="dash-grid">
+  <div class="dash-card">
+    <h4 class="dash-red">&#x2716; Dashboard ACTUAL (datos agregados sin SIGRADE)</h4>
+    <table class="dash-table">
+      <tr><th>Regional</th><th>Matrícula</th><th>% Aprobados</th><th>% Asistencia</th><th>% Deserción</th></tr>
+      <tr><td>Regional 10 (Santo Domingo)</td><td>85,432</td><td>78%</td><td>85%</td><td>28%</td></tr>
+      <tr><td>Regional 15 (Santo Domingo)</td><td>92,150</td><td>81%</td><td>87%</td><td>25%</td></tr>
+      <tr><td>Regional 08 (Santiago)</td><td>68,320</td><td>76%</td><td>82%</td><td>31%</td></tr>
+      <tr><td colspan="5" style="text-align:center;color:#c62828;font-size:8pt;padding:6px;">
+        &#x26A0; No hay datos por asignatura, por estudiante, ni por período dentro del año.
+        No es posible identificar centros críticos ni causas del bajo rendimiento.
+      </td></tr>
+    </table>
+  </div>
+
+  <div class="dash-card">
+    <h4 class="dash-green">&#x2705; Dashboard SIGRADE (datos granulares en vivo)</h4>
+    <table class="dash-table">
+      <tr><th>Regional</th><th>Distrito</th><th>Centro</th><th>Asignatura</th><th>Prom.</th><th>Asist.</th></tr>
+      <tr><td>Regional 10</td><td>10-01</td><td>Escuela A</td><td>Matemáticas</td><td style="color:#c62828;">58</td><td>82%</td></tr>
+      <tr class="alert"><td>Regional 10</td><td>10-01</td><td>Escuela A</td><td>Lengua Esp.</td><td style="color:#e65100;">65</td><td>84%</td></tr>
+      <tr><td>Regional 10</td><td>10-01</td><td>Escuela A</td><td>Ciencias Soc.</td><td>72</td><td>85%</td></tr>
+      <tr><td>Regional 10</td><td>10-02</td><td>Escuela B</td><td>Matemáticas</td><td style="color:#c62828;">45</td><td>71%</td></tr>
+      <tr class="alert"><td>Regional 15</td><td>15-03</td><td>Escuela C</td><td>Matemáticas</td><td style="color:#c62828;">52</td><td>79%</td></tr>
+      <tr><td colspan="6" style="text-align:center;color:#2e7d32;font-size:8pt;padding:6px;">
+        &#x2705; Datos por centro, asignatura y estudiante. Alertas en rojo (rendimiento crítico).
+        Permite identificar: Escuela A necesita intervención en Matemáticas.
+      </td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="dash-grid">
+  <div class="dash-card">
+    <h4 class="dash-red">&#x2716; Datos de Asistencia — Lo que MINERD recibe HOY</h4>
+    <table class="dash-table">
+      <tr><th>Centro</th><th>Octubre</th><th>Noviembre</th><th>Diciembre</th></tr>
+      <tr><td>Escuela A</td><td>85%</td><td>83%</td><td>82%</td></tr>
+      <tr><td>Escuela B</td><td>78%</td><td>75%</td><td>71%</td></tr>
+      <tr><td>Escuela C</td><td>90%</td><td>88%</td><td>87%</td></tr>
+      <tr><td colspan="4" style="text-align:center;color:#c62828;font-size:8pt;padding:6px;">
+        &#x26A0; No se sabe qué estudiantes faltan, ni por qué. No hay alertas.
+      </td></tr>
+    </table>
+  </div>
+
+  <div class="dash-card">
+    <h4 class="dash-green">&#x2705; Datos de Asistencia — Lo que SIGRADE muestra EN VIVO</h4>
+    <table class="dash-table">
+      <tr><th>Estudiante</th><th>Centro</th><th>Faltas</th><th>Última falta</th><th>Riesgo</th></tr>
+      <tr class="alert"><td>Juan P. (ID:20341)</td><td>Escuela B</td><td>12</td><td>Hoy</td><td><span class="alert-dot dot-red"></span>Crítico</td></tr>
+      <tr><td>María G. (ID:20342)</td><td>Escuela B</td><td>5</td><td>Ayer</td><td><span class="alert-dot dot-orange"></span>Medio</td></tr>
+      <tr><td>Carlos R. (ID:20343)</td><td>Escuela A</td><td>8</td><td>Lunes</td><td><span class="alert-dot dot-orange"></span>Medio</td></tr>
+      <tr><td>Ana M. (ID:20344)</td><td>Escuela C</td><td>2</td><td>15/07</td><td><span class="alert-dot dot-green"></span>Bajo</td></tr>
+      <tr><td colspan="5" style="text-align:center;color:#2e7d32;font-size:8pt;padding:6px;">
+        &#x2705; Consejería puede intervenir HOY. Alertas automáticas al acumular 3, 5, 10 faltas.
+      </td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ===== DECISIONES ===== -->
+<h2>7. Decisiones que MINERD Puede Tomar con SIGRADE (y no puede hoy)</h2>
+
+<table style="margin:12px 0;">
+  <tr><th style="width:40%;">Pregunta estratégica</th><th style="width:30%;">Hoy (sin datos)</th><th style="width:30%;">Con SIGRADE</th></tr>
+  <tr>
+    <td><strong>¿Dónde se necesita capacitación docente?</strong></td>
+    <td style="color:#c62828;">No se sabe. Las capacitaciones se asignan por criterios generales o solicitudes informales.</td>
+    <td style="color:#2e7d32;"Se identifican centros/distritos con bajo rendimiento sostenido en áreas específicas (Matemáticas, Lengua, Ciencias). La capacitación se dirige exactamente donde se necesita.</td>
+  </tr>
+  <tr>
+    <td><strong>¿Qué centros requieren intervención prioritaria?</strong></td>
+    <td style="color:#c62828;">Al final del año, cuando ya es tarde. Basado en % aprobados sin detalle.</td>
+    <td style="color:#2e7d32;">En cualquier momento del año. Múltiples indicadores: rendimiento bajo + ausentismo alto + cobertura curricular deficiente.</td>
+  </tr>
+  <tr>
+    <td><strong>¿Estamos reduciendo la deserción?</strong></td>
+    <td style="color:#c62828;">Se mide un año después, cuando los estudiantes ya se fueron. Sin posibilidad de intervenir.</td>
+    <td style="color:#2e7d32;">Alertas predictivas basadas en ausentismo y rendimiento. Intervención oportuna de consejería.</td>
+  </tr>
+  <tr>
+    <td><strong>¿Qué impacto tienen las políticas educativas?</strong></td>
+    <td style="color:#c62828;">Se evalúa con indicadores gruesos y desactualizados. Difícil atribuir causalidad.</td>
+    <td style="color:#2e7d32;">Datos granulares permiten comparar antes/después, centros con/sin intervención, correlaciones estadísticas.</td>
+  </tr>
+  <tr>
+    <td><strong>¿Cómo distribuir los recursos (Textos, utilería, alimentación)?</strong></td>
+    <td style="color:#c62828;">Basado en matrícula reportada, que puede estar desactualizada o inflada.</td>
+    <td style="color:#2e7d32;">Basado en asistencia real, rendimiento y necesidades identificadas por centro.</td>
+  </tr>
+  <tr>
+    <td><strong>¿Qué áreas del currículo se están cubriendo realmente?</strong></td>
+    <td style="color:#c62828;">No se sabe. No hay visibilidad de las planificaciones docentes a escala nacional.</td>
+    <td style="color:#2e7d32;">Mapa nacional de cobertura curricular. Brechas identificadas por región, distrito y centro.</td>
+  </tr>
+</table>
+
+<!-- ===== AHORRO DETALLADO ===== -->
+<h2>8. Resumen del Impacto: Datos Concretos</h2>
+
+<table>
+  <tr><th>Indicador</th><th style="width:25%;" class="num">Hoy (sin SIGRADE)</th><th style="width:25%;" class="num">Con SIGRADE</th></tr>
+  <tr><td>Tiempo para que un dato del aula llegue al MINERD</td><td class="num" style="color:#c62828;">2 a 6 semanas</td><td class="num" style="color:#2e7d32;">En vivo (&lt; 1 segundo)</td></tr>
+  <tr><td>Granularidad de datos de calificaciones</td><td class="num" style="color:#c62828;">% aprobados/reprobados por centro</td><td class="num" style="color:#2e7d32;">Nota por estudiante, asignatura, evaluación</td></tr>
+  <tr><td>Granularidad de datos de asistencia</td><td class="num" style="color:#c62828;">% asistencia por centro</td><td class="num" style="color:#2e7d32;">Registro diario por estudiante</td></tr>
+  <tr><td>Alertas de deserción</td><td class="num" style="color:#c62828;">No existen</td><td class="num" style="color:#2e7d32;">Automáticas, predictivas</td></tr>
+  <tr><td>Supervisión de planificación docente</td><td class="num" style="color:#c62828;">1-2 visitas/año</td><td class="num" style="color:#2e7d32;">En vivo, remota</td></tr>
+  <tr><td>Cobertura curricular visible</td><td class="num" style="color:#c62828;">No visible</td><td class="num" style="color:#2e7d32;">Mapa nacional completo</td></tr>
+  <tr><td>Horas/semana administrativas por escuela</td><td class="num" style="color:#c62828;">~10 horas</td><td class="num" style="color:#2e7d32;">~1 hora</td></tr>
+  <tr><td>Costo anual en papel e impresión</td><td class="num" style="color:#c62828;">~RD$ 517M</td><td class="num" style="color:#2e7d32;">~RD$ 2M</td></tr>
+  <tr class="total"><td>Ahorro total anual estimado</td><td class="num" style="color:#c62828;">—</td><td class="num" style="color:#2e7d32;">RD$ 2,433M</td></tr>
+</table>
+
+<div style="text-align:center;margin-top:30px;padding:16px;background:#e3f2fd;border-radius:8px;">
+  <p style="font-size:11pt;color:#0a2463;font-weight:600;">
+    SIGRADE no es solo un sistema informático: es un salto en la capacidad del MINERD para
+    entender, monitorear y mejorar la educación dominicana en tiempo real.
+  </p>
+  <p style="font-size:9pt;color:#555;margin-top:4px;">
+    2.06 millones de estudiantes &middot; 7,931 centros &middot; 18 regionales &middot; 108 distritos &middot; ~85,000 docentes
+  </p>
+</div>
+
+<hr style="margin:28px 0;">
+
+<p style="text-align:center;color:#888;font-size:9pt;">
+  Documento preparado para el Ministerio de Educación de la República Dominicana (MINERD)<br>
+  Julio 2026 &middot; Fuente: SIGRADE — Sistema de Gestión Educativa
+</p>
+
+</div>
+</body>
+</html>

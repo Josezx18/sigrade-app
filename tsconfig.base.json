@@ -1,0 +1,26 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "strict": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "paths": {
+      "@sigrade/shared-prisma": ["libs/shared/prisma/src/index.ts"],
+      "@sigrade/ui": ["./libs/shared/ui/src/index.ts"],
+      "@sigrade/shared-api": ["libs/shared/api/src/index.ts"],
+      "@sigrade/shared-auth": ["libs/shared/auth/src/index.ts"],
+      "@sigrade/shared-period": ["libs/shared/period/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

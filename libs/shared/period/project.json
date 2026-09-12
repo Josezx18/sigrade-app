@@ -1,0 +1,8 @@
+{
+  "name": "shared-period",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/period/src",
+  "projectType": "library",
+  "tags": ["scope:shared"],
+  "targets": {}
+}

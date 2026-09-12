@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIGRADE — Propuesta de Implementación Nacional</title>
+<style>
+  @page { margin: 2cm; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    color: #1a1a2e; line-height: 1.6; font-size: 11pt;
+    background: #f5f7fa;
+  }
+  .page {
+    max-width: 210mm; margin: 0 auto; background: #fff;
+    padding: 40px 50px; box-shadow: 0 0 20px rgba(0,0,0,.08);
+  }
+  h1 { font-size: 26pt; color: #0a2463; margin-bottom: 8px; letter-spacing: -.5px; }
+  h2 {
+    font-size: 16pt; color: #0a2463; border-bottom: 3px solid #1e88e5;
+    padding-bottom: 6px; margin: 36px 0 18px; page-break-after: avoid;
+  }
+  h3 { font-size: 13pt; color: #1a3a6b; margin: 24px 0 12px; }
+  h4 { font-size: 11pt; color: #333; margin: 16px 0 8px; }
+  p, li { margin-bottom: 8px; color: #333; }
+  .subtitle { font-size: 14pt; color: #555; margin-bottom: 4px; }
+  .meta { font-size: 10pt; color: #888; margin-bottom: 24px; }
+  table {
+    width: 100%; border-collapse: collapse; margin: 16px 0 24px;
+    font-size: 10pt; page-break-inside: avoid;
+  }
+  th {
+    background: #0a2463; color: #fff; padding: 10px 12px;
+    text-align: left; font-weight: 600;
+  }
+  td { padding: 8px 12px; border-bottom: 1px solid #e0e0e0; }
+  tr:nth-child(even) td { background: #f8faff; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .total td { font-weight: 700; border-top: 2px solid #0a2463; background: #e8f0fe !important; }
+  .total td.num { font-size: 11pt; }
+  .subtotal td { font-weight: 600; border-top: 1px solid #888; background: #eef3fb !important; }
+  .highlight { background: #e3f2fd; border-left: 4px solid #1e88e5; padding: 14px 18px; margin: 16px 0; border-radius: 0 6px 6px 0; }
+  .highlight strong { color: #0a2463; }
+  .warning { background: #fff3e0; border-left: 4px solid #ff9800; padding: 14px 18px; margin: 16px 0; border-radius: 0 6px 6px 0; }
+  .benefit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0 20px; }
+  .benefit-card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 14px; background: #fafcff; }
+  .benefit-card h4 { color: #0a2463; margin-bottom: 4px; }
+  .cover {
+    text-align: center; padding: 80px 40px 60px; margin: -40px -50px 40px;
+    background: linear-gradient(135deg, #0a2463 0%, #1e88e5 50%, #0d47a1 100%);
+    color: #fff; page-break-after: always;
+  }
+  .cover h1 { font-size: 30pt; color: #fff; margin-bottom: 12px; }
+  .cover .sub { font-size: 16pt; color: #bbdefb; margin-bottom: 30px; }
+  .cover .shield { font-size: 48pt; margin-bottom: 16px; }
+  .cover .org { font-size: 12pt; color: #bbdefb; margin-top: 40px; }
+  .cover .date { font-size: 11pt; color: #90caf9; margin-top: 6px; }
+  .toc { margin: 24px 0 32px; columns: 2; column-gap: 30px; }
+  .toc li { margin-bottom: 4px; list-style: none; }
+  .toc li::before { content: "● "; color: #1e88e5; }
+  .toc a { color: #1a3a6b; text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .tag { display: inline-block; background: #1e88e5; color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 9pt; font-weight: 600; }
+  .tag.green { background: #2e7d32; }
+  .tag.orange { background: #e65100; }
+  hr { border: none; border-top: 1px solid #e0e0e0; margin: 24px 0; }
+  .page-break { page-break-before: always; }
+  @media print {
+    body { background: #fff; }
+    .page { box-shadow: none; padding: 0; max-width: 100%; }
+    .cover { margin: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ===== PORTADA ===== -->
+<div class="cover">
+  <div class="shield">&#x1F4DA;</div>
+  <h1>Propuesta de Implementaci&oacute;n Nacional</h1>
+  <div class="sub">SIGRADE — Sistema de Gesti&oacute;n Educativa</div>
+  <hr style="width:120px;border-color:#64b5f6;margin:24px auto;">
+  <div class="org">Ministerio de Educaci&oacute;n de la Rep&uacute;blica Dominicana (MINERD)</div>
+  <div class="date">Julio 2026 &middot; Versi&oacute;n 1.0</div>
+</div>
+
+<!-- ===== RESUMEN EJECUTIVO ===== -->
+<h2>1. Resumen Ejecutivo</h2>
+<p>
+  El Ministerio de Educación de la República Dominicana (MINERD) atiende una matrícula de
+  <strong>~2.06 millones de estudiantes</strong> en <strong>~7,931 centros educativos públicos</strong>,
+  organizados en <strong>18 Direcciones Regionales</strong> y <strong>108 Distritos Educativos</strong>,
+  con un presupuesto ejecutado de ~RD$310 mil millones en 2025.
+</p>
+<p>
+  Actualmente, los procesos de calificaciones, asistencia, planificación docente, reportes académicos
+  y comunicación institucional se realizan de forma mayormente manual o con sistemas desconectados,
+  generando altos costos operativos, pérdida de trazabilidad y dificultades para la toma de decisiones.
+</p>
+<p>
+  SIGRADE es un sistema integral de gestión educativa que automatiza y centraliza todos los procesos
+  académico-administrativos, desde el registro del estudiante hasta la generación de reportes
+  nacionales, incluyendo analítica predictiva, alertas tempranas de deserción e inteligencia artificial
+  para asistencia en planificación docente.
+</p>
+
+<table>
+  <tr><th colspan="2" style="text-align:center;">Resumen Financiero Consolidado</th></tr>
+  <tr><td style="width:60%;">Inversión inicial — Escenario 1 (Infraestructura MINERD)</td><td class="num">RD$ 15,757,500</td></tr>
+  <tr><td>Inversión inicial — Escenario 2 (Cloud AWS/Azure)</td><td class="num">RD$ 20,475,000</td></tr>
+  <tr><td>Costo operativo anual — Escenario 1</td><td class="num">RD$ 4,387,500</td></tr>
+  <tr><td>Costo operativo anual — Escenario 2</td><td class="num">RD$ 8,482,500</td></tr>
+  <tr class="total"><td>Ahorro anual estimado para el sistema educativo nacional</td><td class="num">RD$ 3,000,000,000</td></tr>
+  <tr class="total"><td>Retorno de la inversión (ROI) estimado</td><td class="num">&lt; 1 mes</td></tr>
+</table>
+
+<div class="highlight">
+  <strong>Enfoque recomendado:</strong> Implementación híbrida — iniciar en la nube durante la fase piloto
+  y expansión inicial, migrando gradualmente a infraestructura propia del MINERD cuando estén dadas
+  las condiciones técnicas y operativas. Este enfoque minimiza riesgos, acelera la puesta en marcha
+  y maximiza el control institucional a largo plazo.
+</div>
+
+<!-- ===== CONTEXTO ===== -->
+<h2>2. Contexto del Sistema Educativo Dominicano</h2>
+
+<table>
+  <tr><th>Indicador</th><th class="num">Valor</th></tr>
+  <tr><td>Matrícula total (2025-2026)</td><td class="num">2,664,028</td></tr>
+  <tr><td>Matrícula sector público</td><td class="num">2,064,622</td></tr>
+  <tr><td>Centros educativos públicos</td><td class="num">7,931</td></tr>
+  <tr><td>Direcciones Regionales</td><td class="num">18</td></tr>
+  <tr><td>Distritos Educativos</td><td class="num">108</td></tr>
+  <tr><td>Docentes del sector público (estimado)</td><td class="num">~85,000</td></tr>
+  <tr><td>Presupuesto MINERD ejecutado 2025</td><td class="num">RD$ 309,962,231,249</td></tr>
+  <tr><td>Costo por estudiante (gasto corriente directo 2025)</td><td class="num">RD$ 137,801</td></tr>
+  <tr><td>Estudiantes beneficiarios de TRAE (transporte)</td><td class="num">1,894,470</td></tr>
+  <tr><td>Estudiantes beneficiarios de utilería escolar</td><td class="num">1,806,872</td></tr>
+  <tr><td>Tasa de cambio de referencia (julio 2026)</td><td class="num">RD$ 58.50 / USD</td></tr>
+</table>
+
+<p>
+  El 4.36% del PIB se destina a educación preuniversitaria. El gasto administrativo y de gestión
+  no docente representa una porción significativa del presupuesto, con más de RD$13,700 millones
+  anuales solo en sueldos administrativos (2025).
+</p>
+
+<!-- ===== SITUACIÓN ACTUAL ===== -->
+<h2>3. Situación Actual y Problemática</h2>
+
+<h3>3.1 Procesos Manuales y Desconectados</h3>
+<ul>
+  <li>Calificaciones y boletines se registran manualmente en <em>registros de grado</em> físicos.</li>
+  <li>La asistencia diaria se lleva en papel en la mayoría de los centros.</li>
+  <li>Las planificaciones docentes se elaboran sin estandarización ni supervisión en línea.</li>
+  <li>Los reportes consolidados a nivel distrito y regional requieren semanas de trabajo manual.</li>
+</ul>
+
+<h3>3.2 Costos Ocultos Significativos</h3>
+<ul>
+  <li><strong>Papel e impresión:</strong> calificaciones, actas, boletines, planificaciones, asistencia, reportes.</li>
+  <li><strong>Horas-hombre:</strong> directores y secretarios dedican ~10 horas/semana a tareas administrativas repetitivas.</li>
+  <li><strong>Logística:</strong> transporte físico de documentos entre escuelas, distritos y regionales.</li>
+  <li><strong>Almacenamiento:</strong> archivos físicos que requieren espacio, mobiliario y personal.</li>
+</ul>
+
+<h3>3.3 Problemas de Calidad y Trazabilidad</h3>
+<ul>
+  <li>Errores de transcripción en calificaciones y actas.</li>
+  <li>Duplicidad de registros estudiantiles.</li>
+  <li>Imposibilidad de trazabilidad del historial académico completo del estudiante.</li>
+  <li>Datos no disponibles en tiempo real para la toma de decisiones.</li>
+</ul>
+
+<h3>3.4 Deserción Escolar</h3>
+<p>
+  La tasa de abandono en secundaria alcanza el <strong>32.6%</strong> (52,925 estudiantes en la
+  cohorte 2017-2018, IDEC 2026). Sin un sistema de alertas tempranas, las intervenciones
+  ocurren cuando ya es demasiado tarde.
+</p>
+
+<!-- ===== DESCRIPCIÓN DE SIGRADE ===== -->
+<h2>4. Descripción de SIGRADE</h2>
+
+<p>
+  SIGRADE es una plataforma web progresiva (PWA) con capacidad offline, desarrollada sobre
+  un stack moderno de código abierto:
+</p>
+
+<table>
+  <tr><th>Componente</th><th>Tecnología</th></tr>
+  <tr><td>Frontend (web)</td><td>React 18 + Vite + Tailwind CSS</td></tr>
+  <tr><td>Backend (API)</td><td>NestJS + Node.js (TypeScript)</td></tr>
+  <tr><td>Base de datos</td><td>PostgreSQL 16 + pgvector (búsquedas semánticas)</td></tr>
+  <tr><td>Caché y sesiones</td><td>Redis</td></tr>
+  <tr><td>Almacenamiento de archivos</td><td>MinIO (compatible con S3)</td></tr>
+  <tr><td>App móvil offline</td><td>React Native / PWA con Service Workers</td></tr>
+  <tr><td>IA (asistencia docente)</td><td>NVIDIA NIM API (OpenAI-compatible)</td></tr>
+  <tr><td>Infraestructura cloud</td><td>AWS / Azure / On-premise MINERD</td></tr>
+</table>
+
+<h3>Módulos del Sistema</h3>
+<ol>
+  <li><strong>Autenticación y RBAC</strong> — JWT, roles (34 perfiles desde MINERD Analyst hasta Teacher), multi-tenant.</li>
+  <li><strong>Gestión Académica</strong> — Años escolares, periodos, niveles, grados, materias, cursos.</li>
+  <li><strong>Estudiantes</strong> — Registro, RNE, historial, transferencias, exportación, bulk operations.</li>
+  <li><strong>Docentes</strong> — Asignaciones, carga horaria, evaluación desempeño.</li>
+  <li><strong>Calificaciones</strong> — Registro por periodo, cálculo automático de promedios, boletines.</li>
+  <li><strong>Asistencia</strong> — Toma diaria (web + app offline), justificaciones, reportes.</li>
+  <li><strong>Planificación Docente</strong> — Unidades, sesiones, evidencias, IA assist.</li>
+  <li><strong>Analítica y Dashboard</strong> — KPIs en tiempo real por regional, distrito, centro.</li>
+  <li><strong>Alertas Tempranas</strong> — Predicción de riesgo de deserción, intervenciones sugeridas.</li>
+  <li><strong>Consejería</strong> — Casos, intervenciones, seguimiento psicosocial.</li>
+  <li><strong>Auditoría</strong> — Trazabilidad completa de todas las operaciones.</li>
+  <li><strong>Reportes</strong> — Exportación a Excel/PDF, reportes consolidados MINERD.</li>
+</ol>
+
+<!-- ===== ARQUITECTURA ===== -->
+<h2>5. Arquitectura Tecnológica Propuesta</h2>
+
+<p>
+  Se proponen dos escenarios de despliegue, más un enfoque híbrido recomendado:
+</p>
+
+<h3>5.1 Escenario 1 — Infraestructura Propia del MINERD</h3>
+<p>
+  SIGRADE se aloja en los servidores institucionales del MINERD, utilizando sus centros de datos,
+  redes internas y equipos existentes. Esta alternativa reduce costos recurrentes y facilita la
+  integración con sistemas institucionales (SIGEF, nómina, RNE).
+</p>
+
+<h3>5.2 Escenario 2 — Servicios Cloud (AWS / Azure)</h3>
+<p>
+  SIGRADE se despliega sobre infraestructura cloud administrada, con alta disponibilidad,
+  escalabilidad automática y respaldo continuo. Ideal para fases iniciales y escalado rápido.
+</p>
+
+<h3>5.3 Escenario Híbrido — Recomendado</h3>
+<div class="highlight">
+  <strong>Fase 1 (Piloto, meses 1-8):</strong> Cloud — 2 regionales piloto, baja inversión inicial,
+  validación del sistema.<br>
+  <strong>Fase 2 (Expansión, meses 9-18):</strong> Cloud — despliegue nacional progresivo.<br>
+  <strong>Fase 3 (Madurez, año 3+):</strong> Migración gradual a infraestructura MINERD para los
+  servicios core, manteniendo cloud para contingencia y bursting.
+</div>
+
+<!-- ===== PRESUPUESTO ===== -->
+<h2>6. Presupuesto Detallado</h2>
+<p>Todos los montos en Pesos Dominicanos (RD$). Tasa de cambio: RD$ 58.50 / USD 1.00.</p>
+
+<h3>6.1 Escenario 1 — Infraestructura Propia del MINERD</h3>
+
+<table>
+  <tr><th>Partida</th><th class="num">USD</th><th class="num">RD$</th></tr>
+  <tr><td>Desarrollo de la plataforma SIGRADE y módulos principales</td><td class="num">$45,000</td><td class="num">RD$ 2,632,500</td></tr>
+  <tr><td>Diseño e integración de base de datos, seguridad y arquitectura</td><td class="num">$15,000</td><td class="num">RD$ 877,500</td></tr>
+  <tr><td>Configuración, instalación y optimización en servidores institucionales</td><td class="num">$8,000</td><td class="num">RD$ 468,000</td></tr>
+  <tr><td>Desarrollo e integración de herramientas de inteligencia artificial</td><td class="num">$12,000</td><td class="num">RD$ 702,000</td></tr>
+  <tr><td>Capacitación de docentes, técnicos y equipos administrativos</td><td class="num">$7,500</td><td class="num">RD$ 438,750</td></tr>
+  <tr><td>Pruebas piloto, documentación y acompañamiento inicial</td><td class="num">$7,500</td><td class="num">RD$ 438,750</td></tr>
+  <tr style="background:#e8f0fe;"><td colspan="3" style="padding:4px 12px;font-weight:600;color:#0a2463;">Costos adicionales identificados (necesarios para implementación nacional)</td></tr>
+  <tr><td>&nbsp;&nbsp;Migración y limpieza de datos desde sistemas legacy</td><td class="num">$20,000</td><td class="num">RD$ 1,170,000</td></tr>
+  <tr><td>&nbsp;&nbsp;Integración con SIGEF, nómina MINERD, RNE y otros sistemas</td><td class="num">$25,000</td><td class="num">RD$ 1,462,500</td></tr>
+  <tr><td>&nbsp;&nbsp;Pruebas de carga, QA y aseguramiento de calidad</td><td class="num">$15,000</td><td class="num">RD$ 877,500</td></tr>
+  <tr><td>&nbsp;&nbsp;Auditoría de seguridad, pentesting y cumplimiento Ley 172-13</td><td class="num">$15,000</td><td class="num">RD$ 877,500</td></tr>
+  <tr><td>&nbsp;&nbsp;Desarrollo de app móvil offline-first</td><td class="num">$20,000</td><td class="num">RD$ 1,170,000</td></tr>
+  <tr><td>&nbsp;&nbsp;CI/CD, automatización y configuración de infraestructura (Terraform, Docker)</td><td class="num">$10,000</td><td class="num">RD$ 585,000</td></tr>
+  <tr><td>&nbsp;&nbsp;Documentación técnica y manuales de usuario</td><td class="num">$8,000</td><td class="num">RD$ 468,000</td></tr>
+  <tr class="subtotal"><td>Subtotal inversión inicial</td><td class="num">$208,000</td><td class="num">RD$ 12,168,000</td></tr>
+  <tr><td>Contingencia (15%)</td><td class="num">$31,200</td><td class="num">RD$ 1,825,200</td></tr>
+  <tr class="total"><td>Total Escenario 1 (una vez)</td><td class="num">$239,200</td><td class="num">RD$ 13,993,200</td></tr>
+  <tr><td colspan="3" style="font-size:9pt;color:#888;padding-top:12px;">Operación y mantenimiento anual (soporte, hosting, licencias, administración)</td></tr>
+  <tr><td>Costo operativo anual estimado</td><td class="num">$75,000</td><td class="num">RD$ 4,387,500</td></tr>
+</table>
+
+<h3>6.2 Escenario 2 — Servicios Cloud (AWS / Azure)</h3>
+
+<table>
+  <tr><th>Partida</th><th class="num">USD</th><th class="num">RD$</th></tr>
+  <tr><td>Desarrollo completo de la plataforma SIGRADE</td><td class="num">$45,000</td><td class="num">RD$ 2,632,500</td></tr>
+  <tr><td>Arquitectura cloud, configuración de servidores y bases de datos administradas</td><td class="num">$15,000</td><td class="num">RD$ 877,500</td></tr>
+  <tr><td>Servicios de almacenamiento, respaldo y seguridad en la nube (24 meses)</td><td class="num">$20,000</td><td class="num">RD$ 1,170,000</td></tr>
+  <tr><td>Implementación de inteligencia artificial y servicios asociados</td><td class="num">$15,000</td><td class="num">RD$ 877,500</td></tr>
+  <tr><td>Desarrollo de funcionalidades móviles y modo offline</td><td class="num">$12,000</td><td class="num">RD$ 702,000</td></tr>
+  <tr><td>Capacitación, pruebas piloto y despliegue institucional</td><td class="num">$13,000</td><td class="num">RD$ 760,500</td></tr>
+  <tr><td>Soporte técnico y mantenimiento inicial (24 meses)</td><td class="num">$10,000</td><td class="num">RD$ 585,000</td></tr>
+  <tr style="background:#e8f0fe;"><td colspan="3" style="padding:4px 12px;font-weight:600;color:#0a2463;">Costos adicionales (mismos que Escenario 1)</td></tr>
+  <tr><td>&nbsp;&nbsp;Migración de datos, integraciones, QA, seguridad, CI/CD, documentación</td><td class="num">$93,000</td><td class="num">RD$ 5,440,500</td></tr>
+  <tr class="subtotal"><td>Subtotal inversión inicial</td><td class="num">$223,000</td><td class="num">RD$ 13,045,500</td></tr>
+  <tr><td>Contingencia (15%)</td><td class="num">$33,450</td><td class="num">RD$ 1,956,825</td></tr>
+  <tr class="total"><td>Total Escenario 2 (una vez)</td><td class="num">$256,450</td><td class="num">RD$ 15,002,325</td></tr>
+  <tr><td colspan="3" style="font-size:9pt;color:#888;padding-top:12px;">Operación cloud anual (servidores, DB, CDN, respaldos, monitoreo)</td></tr>
+  <tr><td>Costo operativo anual estimado</td><td class="num">$145,000</td><td class="num">RD$ 8,482,500</td></tr>
+</table>
+
+<h3>6.3 Comparación de Escenarios</h3>
+
+<table>
+  <tr><th>Concepto</th><th class="num">Escenario 1 (MINERD)</th><th class="num">Escenario 2 (Cloud)</th></tr>
+  <tr><td>Inversión inicial</td><td class="num">RD$ 13,993,200</td><td class="num">RD$ 15,002,325</td></tr>
+  <tr><td>Costo operativo anual</td><td class="num">RD$ 4,387,500</td><td class="num">RD$ 8,482,500</td></tr>
+  <tr><td>Costo total primeros 3 años</td><td class="num">RD$ 27,155,700</td><td class="num">RD$ 40,449,825</td></tr>
+  <tr><td>Control institucional</td><td class="num">Alto</td><td class="num">Medio</td></tr>
+  <tr><td>Escalabilidad</td><td class="num">Media (limitada por HW)</td><td class="num">Alta (bajo demanda)</td></tr>
+  <tr><td>Tiempo de implementación</td><td class="num">4-6 semanas (si hay HW)</td><td class="num">Inmediato</td></tr>
+  <tr><td>Disponibilidad (SLA)</td><td class="num">Según capacidad MINERD</td><td class="num">99.9%+ (AWS/Azure)</td></tr>
+  <tr><td>Mantenimiento HW</td><td class="num">A cargo del MINERD</td><td class="num">Incluido</td></tr>
+</table>
+
+<div class="highlight">
+  <strong>Recomendación:</strong> Implementación híbrida. Iniciar en cloud (Escenario 2) durante
+  el piloto y expansión, migrando a infraestructura MINERD (Escenario 1) para operación
+  estable. Esto combina la velocidad del cloud con el control y ahorro a largo plazo del
+  centro de datos institucional.
+</div>
+
+<!-- ===== CRONOGRAMA ===== -->
+<h2>7. Cronograma de Implementación</h2>
+
+<table>
+  <tr><th>Fase</th><th>Duración</th><th>Actividades Principales</th></tr>
+  <tr>
+    <td><strong>Fase 1</strong><br><span class="tag">Planificación</span></td>
+    <td>Meses 1-3</td>
+    <td>
+      - Definición de requerimientos finales con MINERD, regionales y distritos<br>
+      - Configuración de infraestructura (cloud o on-premise)<br>
+      - Migración y limpieza de datos legacy<br>
+      - Integración con SIGEF, nómina, RNE<br>
+      - Definición de indicadores y KPIs
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Fase 2</strong><br><span class="tag green">Piloto</span></td>
+    <td>Meses 4-8</td>
+    <td>
+      - Implementación en 2 regionales piloto (ej. Regional 10 y 15, Santo Domingo)<br>
+      - Capacitación a formadores regionales<br>
+      - Pruebas de carga con datos reales<br>
+      - Ajustes y correcciones basadas en retroalimentación
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Fase 3</strong><br><span class="tag orange">Expansión</span></td>
+    <td>Meses 9-15</td>
+    <td>
+      - Despliegue progresivo por regiones (4 regionales/mes)<br>
+      - Capacitación masiva a docentes (virtual + presencial en distritos)<br>
+      - Rollout de app móvil offline<br>
+      - Activación de alertas tempranas y analítica
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Fase 4</strong><br><span class="tag green">Consolidación</span></td>
+    <td>Meses 16-18</td>
+    <td>
+      - Cobertura 100% nacional<br>
+      - Migración gradual a infraestructura MINERD (si aplica)<br>
+      - Evaluación post-implementación<br>
+      - Ajustes finales y transferencia a operación regular
+    </td>
+  </tr>
+</table>
+
+<!-- ===== ANÁLISIS DE AHORRO ===== -->
+<h2>8. Análisis de Ahorro</h2>
+
+<p>
+  La digitalización integral de los procesos educativos genera ahorros cuantificables en
+  múltiples partidas del gasto público. A continuación se detallan las principales fuentes
+  de ahorro estimadas:
+</p>
+
+<h3>8.1 Papel e Impresión</h3>
+<table>
+  <tr><th>Concepto</th><th class="num">Estimación Anual</th></tr>
+  <tr><td>Calificaciones y boletines (~20 hojas/estudiante)</td><td class="num">RD$ 144,000,000</td></tr>
+  <tr><td>Registros de grado y actas (~30 hojas/estudiante)</td><td class="num">RD$ 216,000,000</td></tr>
+  <tr><td>Planificaciones docentes (~50 hojas/docente)</td><td class="num">RD$ 12,750,000</td></tr>
+  <tr><td>Asistencia diaria (~100 hojas/escuela)</td><td class="num">RD$ 39,655,000</td></tr>
+  <tr><td>Reportes a distritos y regionales</td><td class="num">RD$ 75,000,000</td></tr>
+  <tr><td>Comunicaciones y circulares</td><td class="num">RD$ 30,000,000</td></tr>
+  <tr class="subtotal"><td>Subtotal papel e impresión</td><td class="num">RD$ 517,405,000</td></tr>
+  <tr style="font-size:9pt;color:#666;"><td colspan="2">Costos considerados: papel (RD$0.50/hoja), tinta/toner (RD$2.50/hoja), impresora (RD$1.00/hoja depreciación y mantenimiento). Fuente: estimaciones del mercado dominicano 2026.</td></tr>
+</table>
+
+<h3>8.2 Horas-Hombre Administrativas</h3>
+<p>
+  Actualmente, directores y secretarios dedican aproximadamente <strong>10 horas semanales</strong>
+  a tareas administrativas que SIGRADE automatiza: llenado de formularios, consolidación de
+  calificaciones, generación de reportes, elaboración de actas.
+</p>
+<table>
+  <tr><th>Concepto</th><th class="num">Estimación Anual</th></tr>
+  <tr><td>7,931 escuelas × 10 h/semana × 40 semanas</td><td class="num">3,172,400 horas</td></tr>
+  <tr><td>Costo hora promedio personal administrativo</td><td class="num">RD$ 350</td></tr>
+  <tr class="subtotal"><td>Ahorro en horas-hombre</td><td class="num">RD$ 1,110,340,000</td></tr>
+</table>
+
+<h3>8.3 Logística y Transporte de Documentos</h3>
+<table>
+  <tr><th>Concepto</th><th class="num">Estimación Anual</th></tr>
+  <tr><td>Envíos entre escuelas y distritos (108 distritos × ~73 escuelas c/u)</td><td class="num">RD$ 180,000,000</td></tr>
+  <tr><td>Envíos entre distritos y regionales (18 regionales × ~6 distritos c/u)</td><td class="num">RD$ 60,000,000</td></tr>
+  <tr><td>Envíos a sede central MINERD</td><td class="num">RD$ 40,000,000</td></tr>
+  <tr class="subtotal"><td>Subtotal logística</td><td class="num">RD$ 280,000,000</td></tr>
+</table>
+
+<h3>8.4 Almacenamiento de Archivos Físicos</h3>
+<table>
+  <tr><th>Concepto</th><th class="num">Estimación Anual</th></tr>
+  <tr><td>Espacio físico (archivos, estanterías, mobiliario)</td><td class="num">RD$ 75,000,000</td></tr>
+  <tr><td>Personal de archivo y gestión documental</td><td class="num">RD$ 50,000,000</td></tr>
+  <tr><td>Insumos de archivo (carpetas, cajas, etiquetas)</td><td class="num">RD$ 25,000,000</td></tr>
+  <tr class="subtotal"><td>Subtotal almacenamiento</td><td class="num">RD$ 150,000,000</td></tr>
+</table>
+
+<h3>8.5 Reducción de Errores y Fraude</h3>
+<table>
+  <tr><th>Concepto</th><th class="num">Estimación Anual</th></tr>
+  <tr><td>Errores de transcripción en calificaciones y actas</td><td class="num">RD$ 100,000,000</td></tr>
+  <tr><td>Duplicidad de registros estudiantiles</td><td class="num">RD$ 75,000,000</td></tr>
+  <tr><td>Estudiantes fantasmas o irregularidades en nómina</td><td class="num">RD$ 150,000,000</td></tr>
+  <tr><td>Pérdida de documentos y reconstrucción de expedientes</td><td class="num">RD$ 50,000,000</td></tr>
+  <tr class="subtotal"><td>Subtotal errores y fraude</td><td class="num">RD$ 375,000,000</td></tr>
+</table>
+
+<h3>8.6 Resumen de Ahorro Anual</h3>
+<table>
+  <tr><th>Fuente de Ahorro</th><th class="num">Monto Anual</th><th class="num">%</th></tr>
+  <tr><td>Papel e impresión</td><td class="num">RD$ 517,405,000</td><td class="num">21.2%</td></tr>
+  <tr><td>Horas-hombre administrativas</td><td class="num">RD$ 1,110,340,000</td><td class="num">45.6%</td></tr>
+  <tr><td>Logística y transporte</td><td class="num">RD$ 280,000,000</td><td class="num">11.5%</td></tr>
+  <tr><td>Almacenamiento de archivos</td><td class="num">RD$ 150,000,000</td><td class="num">6.2%</td></tr>
+  <tr><td>Reducción de errores y fraude</td><td class="num">RD$ 375,000,000</td><td class="num">15.4%</td></tr>
+  <tr class="total"><td>Ahorro total anual estimado</td><td class="num">RD$ 2,432,745,000</td><td class="num">100%</td></tr>
+</table>
+
+<div class="warning">
+  <strong>Nota:</strong> Este ahorro no incluye beneficios intangibles como mejora en la calidad
+  educativa, reducción de la deserción escolar, transparencia institucional y sostenibilidad
+  ambiental. El ahorro real total se estima entre <strong>RD$ 2,500 y RD$ 3,500 millones anuales</strong>
+  una vez el sistema esté completamente implementado.
+</div>
+
+<!-- ===== ROI ===== -->
+<h2>9. Retorno de la Inversión (ROI)</h2>
+
+<table>
+  <tr><th>Indicador</th><th class="num">Escenario 1</th><th class="num">Escenario 2</th></tr>
+  <tr><td>Inversión total inicial</td><td class="num">RD$ 13,993,200</td><td class="num">RD$ 15,002,325</td></tr>
+  <tr><td>Costo operativo primer año</td><td class="num">RD$ 4,387,500</td><td class="num">RD$ 8,482,500</td></tr>
+  <tr><td>Costo total primer año</td><td class="num">RD$ 18,380,700</td><td class="num">RD$ 23,484,825</td></tr>
+  <tr><td>Ahorro anual estimado (conservador)</td><td class="num">RD$ 2,432,745,000</td><td class="num">RD$ 2,432,745,000</td></tr>
+  <tr class="total"><td>Retorno de la inversión</td><td class="num">&lt; 1 mes</td><td class="num">&lt; 1 mes</td></tr>
+  <tr class="total"><td>ROI a 3 años</td><td class="num">39,700%</td><td class="num">31,000%</td></tr>
+</table>
+
+<div class="highlight">
+  <strong>Conclusión:</strong> La inversión en SIGRADE se recupera en cuestión de días una vez
+  el sistema está operando a nivel nacional. El ahorro generado en papel, horas-hombre,
+  logística y almacenamiento supera ampliamente cualquier escenario de inversión.
+</div>
+
+<!-- ===== BENEFICIOS CUALITATIVOS ===== -->
+<h2>10. Beneficios Cualitativos</h2>
+
+<div class="benefit-grid">
+  <div class="benefit-card">
+    <h4>&#x1F50D; Transparencia</h4>
+    <p>Trazabilidad completa de cada calificación, acta y transacción. Auditoría en tiempo real. Reducción de irregularidades.</p>
+  </div>
+  <div class="benefit-card">
+    <h4>&#x1F4CA; Toma de Decisiones Basada en Datos</h4>
+    <p>Dashboards en tiempo real para MINERD, regionales y distritos. Detección de tendencias y patrones.</p>
+  </div>
+  <div class="benefit-card">
+    <h4>&#x1F393; Trazabilidad Académica</h4>
+    <p>Historial completo del estudiante desde inicial hasta media. Transferencias entre centros sin pérdida de datos.</p>
+  </div>
+  <div class="benefit-card">
+    <h4>&#x1F6A8; Reducción de Deserción</h4>
+    <p>Alertas tempranas basadas en asistencia, calificaciones y factores de riesgo. Intervención oportuna.</p>
+  </div>
+  <div class="benefit-card">
+    <h4>&#x1F3EB; Calidad Educativa</h4>
+    <p>Planificaciones alineadas al currículo MINERD. Supervisión remota de la práctica docente. IA asistida.</p>
+  </div>
+  <div class="benefit-card">
+    <h4>&#x1F4F1; Movilidad y Acceso</h4>
+    <p>App offline para docentes en zonas sin internet. Acceso desde cualquier dispositivo.</p>
+  </div>
+  <div class="benefit-card">
+    <h4>&#x1F331; Sostenibilidad Ambiental</h4>
+    <p>Millones de hojas de papel ahorradas. Reducción de tóner, impresoras y transporte de documentos.</p>
+  </div>
+  <div class="benefit-card">
+    <h4>&#x1F504; Integración Institucional</h4>
+    <p>Conexión directa con SIGEF, nómina MINERD, RNE. Eliminación de silos de información.</p>
+  </div>
+  <div class="benefit-card">
+    <h4>&#x1F4B0; Eficiencia Administrativa</h4>
+    <p>Reducción de horas-hombre en procesos manuales. Automatización de reportes consolidados.</p>
+  </div>
+  <div class="benefit-card">
+    <h4>&#x1F512; Seguridad de la Información</h4>
+    <p>Datos protegidos bajo estándares internacionales. Cumplimiento Ley 172-13 de protección de datos.</p>
+  </div>
+</div>
+
+<!-- ===== MATRIZ DE RIESGOS ===== -->
+<h2>11. Matriz de Riesgos</h2>
+
+<table>
+  <tr><th>Riesgo</th><th style="width:70px;">Prob.</th><th style="width:70px;">Impacto</th><th>Mitigación</th></tr>
+  <tr>
+    <td>Resistencia al cambio por parte del personal docente y administrativo</td>
+    <td style="text-align:center;"><span class="tag orange">Media</span></td>
+    <td style="text-align:center;"><span class="tag orange">Alto</span></td>
+    <td>Programa de gestión del cambio, capacitación continua, involucramiento de líderes regionales desde la fase de diseño.</td>
+  </tr>
+  <tr>
+    <td>Conectividad insuficiente en centros educativos rurales</td>
+    <td style="text-align:center;"><span class="tag" style="background:#c62828;">Alta</span></td>
+    <td style="text-align:center;"><span class="tag orange">Alto</span></td>
+    <td>App offline-first con sincronización diferida. Compatible con redes de baja velocidad. Almacenamiento local en el dispositivo.</td>
+  </tr>
+  <tr>
+    <td>Disponibilidad de infraestructura tecnológica en MINERD</td>
+    <td style="text-align:center;"><span class="tag orange">Media</span></td>
+    <td style="text-align:center;"><span class="tag orange">Alto</span></td>
+    <td>Escenario híbrido: iniciar en cloud mientras se prepara la infraestructura institucional. Migración gradual.</td>
+  </tr>
+  <tr>
+    <td>Calidad y consistencia de datos legacy para migración</td>
+    <td style="text-align:center;"><span class="tag" style="background:#c62828;">Alta</span></td>
+    <td style="text-align:center;"><span class="tag orange">Medio</span></td>
+    <td>Proceso de limpieza y validación de datos previo a la migración. Herramientas de deduplicación y normalización.</td>
+  </tr>
+  <tr>
+    <td>Rotación del equipo de desarrollo post-implementación</td>
+    <td style="text-align:center;"><span class="tag orange">Media</span></td>
+    <td style="text-align:center;"><span class="tag green">Medio</span></td>
+    <td>Código documentado, CI/CD automatizado, transferencia de conocimiento al equipo técnico del MINERD.</td>
+  </tr>
+  <tr>
+    <td>Cambios en requerimientos durante la implementación</td>
+    <td style="text-align:center;"><span class="tag" style="background:#c62828;">Alta</span></td>
+    <td style="text-align:center;"><span class="tag green">Medio</span></td>
+    <td>Metodología ágil con sprints quincenales. Módulo de administración de cambios con impacto presupuestario visible.</td>
+  </tr>
+  <tr>
+    <td>Seguridad de la información y ciberseguridad</td>
+    <td style="text-align:center;"><span class="tag orange">Media</span></td>
+    <td style="text-align:center;"><span class="tag" style="background:#c62828;">Crítico</span></td>
+    <td>Arquitectura zero-trust, encriptación en reposo y tránsito, pentesting semestral, cumplimiento OWASP Top 10.</td>
+  </tr>
+  <tr>
+    <td>Dependencia de un solo proveedor cloud</td>
+    <td style="text-align:center;"><span class="tag green">Baja</span></td>
+    <td style="text-align:center;"><span class="tag orange">Alto</span></td>
+    <td>Arquitectura multi-cloud o híbrida. Uso de contenedores (Docker/Kubernetes) para portabilidad.</td>
+  </tr>
+</table>
+
+<!-- ===== SOSTENIBILIDAD 5 AÑOS ===== -->
+<h2>12. Sostenibilidad a 5 Años</h2>
+
+<table>
+  <tr><th>Año</th><th class="num">Inversión</th><th class="num">Operación</th><th class="num">Total</th><th class="num">Ahorro</th><th class="num">Resultado Neto</th></tr>
+  <tr><td>Año 1</td><td class="num">RD$ 15M</td><td class="num">RD$ 6M</td><td class="num">RD$ 21M</td><td class="num">RD$ 2,433M</td><td class="num" style="color:#2e7d32;">RD$ +2,412M</td></tr>
+  <tr><td>Año 2</td><td class="num">—</td><td class="num">RD$ 6M</td><td class="num">RD$ 6M</td><td class="num">RD$ 2,433M</td><td class="num" style="color:#2e7d32;">RD$ +2,427M</td></tr>
+  <tr><td>Año 3</td><td class="num">—</td><td class="num">RD$ 6M</td><td class="num">RD$ 6M</td><td class="num">RD$ 2,433M</td><td class="num" style="color:#2e7d32;">RD$ +2,427M</td></tr>
+  <tr><td>Año 4</td><td class="num">—</td><td class="num">RD$ 6M</td><td class="num">RD$ 6M</td><td class="num">RD$ 2,433M</td><td class="num" style="color:#2e7d32;">RD$ +2,427M</td></tr>
+  <tr><td>Año 5</td><td class="num">—</td><td class="num">RD$ 6M</td><td class="num">RD$ 6M</td><td class="num">RD$ 2,433M</td><td class="num" style="color:#2e7d32;">RD$ +2,427M</td></tr>
+  <tr class="total">
+    <td>Acumulado 5 años</td>
+    <td class="num">RD$ 15M</td>
+    <td class="num">RD$ 30M</td>
+    <td class="num">RD$ 45M</td>
+    <td class="num">RD$ 12,165M</td>
+    <td class="num" style="color:#2e7d32;font-size:12pt;">RD$ +12,120M</td>
+  </tr>
+</table>
+
+<div class="highlight">
+  <strong>Nota:</strong> La proyección asume una operación bajo Escenario 1 a partir del año 2.
+  No incluye ajustes por inflación ni crecimiento de matrícula. El ahorro está calculado de
+  forma conservadora (RD$ 2,433M/año). El ahorro real con eficiencias adicionales se estima
+  entre RD$ 3,000M y RD$ 3,500M anuales.
+</div>
+
+<!-- ===== RECOMENDACIONES ===== -->
+<h2>13. Recomendaciones Finales</h2>
+
+<ol>
+  <li>
+    <strong>Implementación híbrida como estrategia óptima:</strong> Iniciar en cloud para
+    acelerar el piloto y la expansión, migrando a infraestructura MINERD cuando las condiciones
+    técnicas estén consolidadas. Esto minimiza riesgos y maximiza el control institucional.
+  </li>
+  <li>
+    <strong>Priorizar la app offline-first:</strong> más de 1,500 centros educativos tienen
+    conectividad limitada o intermitente. La app debe funcionar sin conexión y sincronizar
+    en segundo plano cuando la red esté disponible.
+  </li>
+  <li>
+    <strong>Iniciar con un piloto en 2 regionales</strong> (ej. Regional 10 y 15, Santo Domingo)
+    para validar el sistema, ajustar procesos y formar a los primeros entrenadores antes del
+    despliegue nacional.
+  </li>
+  <li>
+    <strong>Involucrar a las regionales y distritos</strong> desde la fase de diseño. El éxito
+    del sistema depende tanto de la tecnología como de la adopción por parte de los usuarios.
+  </li>
+  <li>
+    <strong>Establecer un equipo de gobierno de datos</strong> en el MINERD para garantizar la
+    calidad, integridad y seguridad de la información desde el día uno.
+  </li>
+  <li>
+    <strong>Planificar la migración de datos legacy</strong> como un proyecto independiente.
+    Los datos históricos deben ser limpiados, normalizados y validados antes de la carga al
+    nuevo sistema.
+  </li>
+  <li>
+    <strong>Garantizar la sostenibilidad del proyecto</strong> mediante la asignación de
+    presupuesto recurrente para operación, mantenimiento y evolución del sistema.
+  </li>
+  <li>
+    <strong>Considerar el costo de la no implementación:</strong> cada año sin SIGRADE
+    representa un gasto evitable estimado en RD$ 2,400 a RD$ 3,500 millones en ineficiencias
+    administrativas y operativas.
+  </li>
+</ol>
+
+<hr>
+
+<p style="text-align:center;color:#888;font-size:10pt;margin-top:30px;">
+  Documento preparado para el Ministerio de Educación de la República Dominicana (MINERD)<br>
+  Julio 2026 &middot; Versión 1.0 &middot; Fuente: SIGRADE — Sistema de Gestión Educativa
+</p>
+
+</div>
+</body>
+</html>
